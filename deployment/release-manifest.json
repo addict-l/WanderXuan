@@ -1,0 +1,28 @@
+{
+  "version": "1.0.0",
+  "android_application_id": "cn.coupleroom.app",
+  "android_version_code": 1,
+  "export_date": "2026-10-29",
+  "original_source_archive_sha256": "3d3116ddfbfaeaf4966b1b77757ec22e1724e6156366564ae83b30f23a0deaaf",
+  "apk_sha256": "5e1655c78e2ec04163d756c74cf04dacc3245245675ac283f3670f6c6019c986",
+  "apk_bytes": 5732806,
+  "signing_certificate_sha256": "92bf2d453e30f4cc5bacd311754df1e9501810bcca95933321c4bf1dc4bce2d3",
+  "web_assets_matching_delivered_apk": 14,
+  "backend_checks_passed": 11,
+  "runtime_source_sha256": {
+    "web/index.html": "ae2ada36656b3f65a004156204d98bed40b6a6c700a37ee8ba15f27eb8e07dab",
+    "web/config.js": "8a5aac3326cc50bfad9579054a002d0a165235a89f2ac1570b572dde4da83484",
+    "web/css/room.css": "b889ff1d27480307fb754124d8c1a34c94a1fcdf0940ee4ba66415fb277390c1",
+    "web/js/scene.js": "0428b75c263274721a175746707527a9c7f9149a8145db42a799ac08bb65b119",
+    "web/js/sync.js": "c4a7829a9f17490f269c6331d0a0430fe4f6a3670c317a25aab6a84c86b78233",
+    "web/js/app.js": "00f2444afe34bfe87fc1d61aee63c1a3938d2c4c853ce3999b4b4086a0427824",
+    "web/fonts/OFL-ZCOOLKuaiLe.txt": "538078469839b4a2e7ad22bef4ebe41681a4e53749bb2a072144024f1d6d703d",
+    "web/fonts/OFL-LongCang.txt": "603546b7219a94bb59bf8294458194a5010119486354092b66a09a3fd61aeacc",
+    "web/fonts/LongCang-Regular.ttf": "e5bf2c3f24ef2327c6f136d8f73e2f9dfdf44896fdbeb35a9515f44777bb91bc",
+    "web/fonts/ZCOOLKuaiLe-Regular.ttf": "812a6fc1fe54b6d73a419245c32dfeba8aa33104d5be90d1cf6af082007cb71d",
+    "web/vendor/three-LICENSE.txt": "7dddf7c5b8fd10ee654db8857d75d104b5557889aa5a91fc4ca545ea7c07062f",
+    "web/vendor/three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+    "web/vendor/pocketbase.umd.js": "08bb483d6d83a3b95491aa3700ac59370a960cc864ac19784acfafa68ad0b233",
+    "web/vendor/OrbitControls.js": "02bb4ade710f3e607329e37a21f098bc3ac70eb6e33daf8a65e79f4db785e7b2"
+  }
+}

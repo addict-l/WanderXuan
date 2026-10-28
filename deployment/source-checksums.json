@@ -1,0 +1,5 @@
+{
+  "server/pocketbase/pocketbase_0.40.5_linux_amd64.zip": "1dbea1b01eb3dfe64953513859d01e759c96650c4e3264fa4eecd54b769382e4",
+  "server/pocketbase/SHA256SUMS.txt": "1e89b7e33125f9b7d9cedd49a0d09796fb5fbb4bb8db9d64c1b6047541037206",
+  "server/pb_migrations/1793200000_couple_room.js": "fd728a7b8c2e1b45ab2ded4ffc72d45467b1b0ad6cc7f4a494cbc6667266cdca"
+}

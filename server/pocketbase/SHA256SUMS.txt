@@ -1,0 +1,2 @@
+1dbea1b01eb3dfe64953513859d01e759c96650c4e3264fa4eecd54b769382e4  pocketbase_0.40.5_linux_amd64.zip
+570baa1c45d2fb92fc0073582b945ca0ece03cbf9837ccabf49a222f99dd02e3  pocketbase_0.40.5_linux_arm64.zip

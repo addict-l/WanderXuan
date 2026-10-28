@@ -1,0 +1,50 @@
+双人小屋 — 部署与构建说明
+交付日期：2026-10-29
+
+APK
+应用名：双人小屋
+包名：cn.coupleroom.app
+版本：1.0.0（versionCode 1）
+系统要求：Android 8.0+（minSdk 26，targetSdk/compileSdk 36）
+文件：双人小屋-1.0.0.apk
+大小：5,732,806 字节（约 5.47 MiB）
+SHA256：5e1655c78e2ec04163d756c74cf04dacc3245245675ac283f3670f6c6019c986
+下载：https://api.xn--zbs33ddmy9oeqa.club/couple-room/downloads/CoupleRoom-1.0.0.apk
+服务器地址已写入内置配置；脚本、字体、图标和页面都在 APK 中，无外部 CDN 依赖。
+该 APK 为专用密钥签名的 release 包；账号密码和签名私钥未打入 APK。
+
+阿里云
+主机：47.82.83.74（现有香港轻量应用服务器）
+后端：PocketBase 0.40.5 linux_amd64，两个附带二进制包的 SHA256 已校验。
+API：https://api.xn--zbs33ddmy9oeqa.club/couple-room
+健康检查：上述地址 + /api/health
+服务：couple-room.service，已启用开机启动、故障自动重启。
+监听：127.0.0.1:8090，经现有 Nginx HTTPS 反向代理，无新增公网端口。
+运行账户：couple-room（独立系统账户）
+安装目录：/opt/couple-room
+发布目录：/opt/couple-room/releases/20261029-1
+持久化数据库及照片：/opt/couple-room/pb_data
+初始在线备份：/opt/couple-room/backups/initial-20261029
+原 Nginx 配置备份：/opt/couple-room/backups/ingress-before-20261029
+公开路由只提供 PocketBase API 与签名 APK，管理台未公开。
+API 访问日志已关闭，避免照片下载临时口令进入访问日志。
+原拾年后端容器及镜像未变化，原健康接口保持正常。
+
+维护
+检查服务：sudo systemctl status couple-room
+查看日志：sudo journalctl -u couple-room
+只重启本服务：sudo systemctl restart couple-room
+回退时仅停用本服务并移除本次 Nginx snippet 引用；通过 nginx -t 后再 reload，保留 pb_data。
+本次已做初始备份，未配置定时备份。
+两个账号的独立初始密码请查看单独的《安装与账号.txt》，不要发布该文件。
+
+重新构建
+Android Studio 打开源代码中的 CoupleRoom/android。
+工具链：JDK 21、Gradle 8.13、Android Gradle Plugin 8.11.1、Android SDK Platform 36。
+macOS：cd android 后运行 ./scripts/build.sh；Windows：配置 JDK/SDK 后运行 gradlew.bat assembleRelease。
+签名配置文件和私钥保存在构建机 ~/.local/share/couple-room/android-signing/，不随公开源码交付。
+后续覆盖安装必须使用同一签名密钥。完整说明见源代码 android/README.md。
+
+后端验收
+11 项检查全部通过：健康、Android 资源域跨域、双账号登录及刷新、错误密码拒绝、匿名读保护及关闭注册、双向记录与 SSE 同步、删除同步、照片受保护上传下载、密码修改与恢复、验证记录清理。
+结果文件：后端验收结果.json。下载文件已通过公网完整下载及 SHA256 一致性核验，见下载核验.json。

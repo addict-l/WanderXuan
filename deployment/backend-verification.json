@@ -1,0 +1,52 @@
+{
+  "base_url": "https://api.xn--zbs33ddmy9oeqa.club/couple-room",
+  "passed": true,
+  "checks": [
+    {
+      "check": "health",
+      "passed": true
+    },
+    {
+      "check": "android_asset_origin_cors",
+      "passed": true
+    },
+    {
+      "check": "both_accounts_auth_and_refresh",
+      "passed": true
+    },
+    {
+      "check": "incorrect_password_rejected",
+      "passed": true
+    },
+    {
+      "check": "anonymous_read_hidden_and_registration_disabled",
+      "passed": true
+    },
+    {
+      "check": "account_a_create_account_b_read_and_realtime",
+      "passed": true
+    },
+    {
+      "check": "account_b_update_account_a_read_and_realtime",
+      "passed": true
+    },
+    {
+      "check": "shared_delete_and_realtime",
+      "passed": true
+    },
+    {
+      "check": "photo_upload_protected_download_other_account_and_delete",
+      "passed": true
+    },
+    {
+      "check": "old_password_required_password_change_and_restore",
+      "passed": true
+    },
+    {
+      "check": "cleanup_and_original_password_restored",
+      "passed": true
+    }
+  ],
+  "failure": null,
+  "cleanup_errors": []
+}
