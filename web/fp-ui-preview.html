@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>小人视角界面</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>@font-face{font-family:"ZCOOL KuaiLe";src:url("fonts/ZCOOLKuaiLe-Regular.ttf")}@font-face{font-family:"Long Cang";src:url("fonts/LongCang-Regular.ttf")}</style>
+<link rel="stylesheet" href="css/room.css"><link rel="stylesheet" href="css/fp-ui.css">
+</head><body>
+<div id="stage"></div>
+<div class="hud demo"><div class="names"><span class="a">唐小轩</span><span class="heart" aria-hidden="true">♥</span><span class="b">宛如</span></div>
+<div class="days">界面预览 · 演示</div>
+<div class="demo-btns"><button type="button" id="d-poke">被戳一下</button><button type="button" id="d-enter">进门动画</button><button type="button" id="d-tut">新手引导</button></div></div>
+<style>.demo-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}.demo-btns button{border:0;background:var(--chip);color:var(--ink);font:inherit;font-size:12px;padding:5px 10px;border-radius:999px;cursor:pointer}
+body.fp-mode .hud.demo .demo-btns{display:flex}</style>
+<script src="vendor/three.min.js"></script>
+<script src="vendor/OrbitControls.js"></script>
+<script src="js/characters.js"></script>
+<script src="js/fp-ui.js"></script>
+<script>/* 预览页专用的演示接线：只为了让界面能在这里摸一摸，不是正式的交互实现。 */
+(function(){
+const stage=document.getElementById('stage');
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;stage.appendChild(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#E9ECF6');
+const camera=new THREE.PerspectiveCamera(70,1,.05,60);
+const orbit=new THREE.OrbitControls(camera,renderer.domElement);orbit.enablePan=false;orbit.enableDamping=true;orbit.maxPolarAngle=1.45;orbit.minDistance=4;orbit.maxDistance=20;orbit.enabled=false;
+scene.add(new THREE.HemisphereLight('#ffffff','#C9A88A',.7));const sun=new THREE.DirectionalLight('#FFF4E0',.9);sun.position.set(5,9,6);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-7,right:7,top:7,bottom:-7});scene.add(sun);scene.add(new THREE.AmbientLight('#fff',.15));
+const M=c=>new THREE.MeshStandardMaterial({color:c,roughness:.85});
+const box=(w,h,d,c,x,y,z)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),M(c));m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;scene.add(m);return m;};
+box(10,.2,10,'#C9976A',0,-.1,0);box(10,5,.2,'#C9CEEA',0,2.5,-5.1);box(.2,5,10,'#C9CEEA',-5.1,2.5,0);box(10,1.3,.04,'#A9B0DB',0,.65,-4.98);box(.04,1.3,10,'#A9B0DB',-4.98,.65,0);
+const targets=[],solids=[];
+function thing(mesh,label,hint){mesh.userData.label=label;mesh.userData.hint=hint;targets.push(mesh);return mesh;}
+const fridge=thing(box(.9,2.6,.82,'#BFE3D6',4.5,1.3,-4.55),'冰箱 · 想一起吃的');solids.push([4.05,4.95,-5,-4.1]);
+const shelf=thing(box(1.5,3.3,.5,'#D9BE98',-4.15,1.65,-4.74),'书架 · 5 本回忆');solids.push([-4.9,-3.4,-5,-4.49]);
+const desk=thing(box(2.6,1.5,1,'#E7D3B8',2.65,.75,-4.45),'书桌 · 今日待办');solids.push([1.35,3.95,-4.95,-3.95]);
+const sofa=thing(box(1.15,.8,2.8,'#2F6F68',-4.2,.4,-.25),'沙发');solids.push([-4.8,-3.6,-1.8,1.3]);
+['#F7C27A','#8FC1EA','#F3C6CF','#C4E5F6'].forEach((c,i)=>thing(box(.86,1.03,.03,'#FFFFFF',-2.55+i*1.05,3.2,-4.97),['第一次约会','海边那天','一起包饺子','第一场雪'][i],'点一下看照片'));
+const plant=thing(box(.5,1.6,.5,'#5BAE8C',-4.2,.8,3.85),'小树 · Lv.4','点一下浇水');solids.push([-4.45,-3.95,3.6,4.1]);
+/* characters */
+const me=CoupleChars.create(THREE,{who:0}),her=CoupleChars.create(THREE,{who:1});
+scene.add(me.group,her.group);me.group.position.set(1.5,0,3);me.group.rotation.y=Math.PI*1.15;her.setMood('happy');
+her.group.traverse(o=>{if(o.isMesh)o.userData.partner=true;});
+let yaw=me.group.rotation.y,pitch=-.05,herAng=0;
+const ui=FPUI.mount({names:['唐小轩','宛如'],me:0});
+const toast=document.createElement('div');toast.className='toast';document.body.appendChild(toast);let tT;
+const say=m=>{toast.textContent=m;toast.classList.add('on');clearTimeout(tT);tT=setTimeout(()=>toast.classList.remove('on'),2000);};
+ui.on('look',({dx,dy})=>{yaw-=dx*.0055;pitch=Math.max(-1.0,Math.min(1.0,pitch-dy*.0045));});
+let curTarget=null;
+ui.on('interact',()=>{if(curTarget)say(`打开：${curTarget.userData.label.split(' · ')[0]}（这里接现有面板）`);});
+const ray=new THREE.Raycaster(),v2=new THREE.Vector2();
+ui.on('tap',({x,y})=>{const r=renderer.domElement.getBoundingClientRect();v2.set((x-r.left)/r.width*2-1,-(y-r.top)/r.height*2+1);ray.setFromCamera(v2,camera);
+  const hit=ray.intersectObjects([...targets,her.group],true)[0];if(!hit)return;
+  if(hit.object.userData.partner&&hit.distance<5){her.play('jump');say('宛如：嘿嘿，干嘛呀～');return;}
+  if(targets.includes(hit.object)&&hit.distance<2.5)say(`打开：${hit.object.userData.label.split(' · ')[0]}（这里接现有面板）`);else if(targets.includes(hit.object))say('再走近一点');});
+ui.on('emote',n=>{me.play(n);say({wave:'你挥了挥手',jump:'你跳了一下',nod:'你点了点头'}[n]+(ui.getView()==='fp'?'（切到俯瞰能看到）':''));});
+ui.on('view',v=>{orbit.enabled=v==='overview';me.group.visible=v==='overview';if(v==='overview'){camera.fov=40;camera.position.set(11,9,11);orbit.target.set(-.5,1,-.5);camera.updateProjectionMatrix();}else{camera.fov=70;camera.updateProjectionMatrix();}});
+me.group.visible=false;
+document.getElementById('d-poke').onclick=()=>{ui.notifyPoke('宛如','抱抱');her.play('jump');};
+document.getElementById('d-enter').onclick=()=>ui.playEnter('唐小轩');
+document.getElementById('d-tut').onclick=()=>ui.showTutorial(true);
+function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();}
+addEventListener('resize',resize);resize();
+const clock=new THREE.Clock(),eye=new THREE.Vector3(),fwd=new THREE.Vector3(),tmp=new THREE.Vector3(),cen=new THREE.Vector2(0,0);
+function collide(p){const r=me.info.radius;p.x=Math.max(-4.6,Math.min(4.6,p.x));p.z=Math.max(-4.6,Math.min(4.6,p.z));
+  for(const [x0,x1,z0,z1] of solids){const cx=Math.max(x0,Math.min(x1,p.x)),cz=Math.max(z0,Math.min(z1,p.z)),dx=p.x-cx,dz=p.z-cz,d=Math.hypot(dx,dz);if(d<r){if(d>1e-6){p.x=cx+dx/d*r;p.z=cz+dz/d*r;}}}}
+ui.playEnter('唐小轩').then(()=>ui.showTutorial());
+(function loop(){
+  const dt=Math.min(clock.getDelta(),.05);
+  const mv=ui.getMove();
+  if(ui.getView()==='fp'){
+    if(mv.active){const s=1.8*dt,fx=Math.sin(yaw),fz=Math.cos(yaw),rx=-Math.cos(yaw),rz=Math.sin(yaw);me.group.position.x+=(fx*mv.y+rx*mv.x)*s;me.group.position.z+=(fz*mv.y+rz*mv.x)*s;collide(me.group.position);}
+    me.setMotion(mv.active?'walk':'idle');me.group.rotation.y=yaw;
+  }
+  her.group.position.set(Math.cos(herAng)*1.4+.6,0,Math.sin(herAng)*1.1+.4);herAng+=dt*.25;her.group.rotation.y=Math.atan2(-Math.sin(herAng),Math.cos(herAng));her.setMotion('walk');
+  me.update(dt);her.update(dt);
+  if(ui.getView()==='fp'){
+    me.getEyeWorldPosition(eye);camera.position.copy(eye);fwd.set(Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),Math.cos(yaw)*Math.cos(pitch));camera.lookAt(tmp.copy(eye).add(fwd));
+    ray.setFromCamera(cen,camera);const hit=ray.intersectObjects(targets,false)[0];const t=hit&&hit.distance<2.5?hit.object:null;
+    if(t!==curTarget){curTarget=t;ui.setTarget(t?{label:t.userData.label,hint:t.userData.hint}:null);}
+    her.getEyeWorldPosition(tmp);const p=tmp.clone().project(camera),behind=p.z>1,off=behind||Math.abs(p.x)>1||Math.abs(p.y)>1;
+    const dx=tmp.x-eye.x,dz=tmp.z-eye.z,ang=Math.atan2(dx,dz)-yaw;let a=-(((ang+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI);
+    ui.setPartner({visible:off,angle:a,distance:Math.hypot(dx,dz)});
+    me.setHeadYaw(0);her.setHeadYaw(0);
+  }else{orbit.update();ui.setPartner({visible:false});}
+  renderer.render(scene,camera);requestAnimationFrame(loop);
+})();
+})();
+</script>
+</body></html>
