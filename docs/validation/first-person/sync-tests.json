@@ -1,0 +1,10 @@
+{
+  "command": "node --test tests/fp-sync.test.cjs",
+  "passed": true,
+  "tests": 23,
+  "passed_tests": 23,
+  "failed_tests": 0,
+  "transport": "Two independent browser globals running actual sync.js with deterministic PocketBase storage, server updated timestamps and SSE delivery; no production credentials or data.",
+  "presence_lease": "Receiver monotonic time; cold snapshots use server updated age anchored by successful local write acknowledgement. Sender presence.at is not used for the new lease.",
+  "additional_regression": "pose cadence and revision ordering survive sender wall-clock correction"
+}

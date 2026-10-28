@@ -1,0 +1,253 @@
+{
+  "simulator_core_passed": true,
+  "device": {
+    "serial": "emulator-5554",
+    "android": "16",
+    "api": 36,
+    "physical_size": "1080x2424",
+    "existing_emulator_reused": true
+  },
+  "packages": {
+    "production": {
+      "passed": true,
+      "package": "cn.coupleroom.app",
+      "version_code": 3,
+      "version": "1.1.0",
+      "apk_bytes": 5761412,
+      "apk_sha256": "0efe1ae6e519b028c36bac7245eb7b46025e8c8c3239856d7f171fc1caf91a73",
+      "certificate_sha256": "92bf2d453e30f4cc5bacd311754df1e9501810bcca95933321c4bf1dc4bce2d3",
+      "web_assets_match_source": 19,
+      "preview_pages_excluded": [
+        "characters-preview.html",
+        "fp-ui-preview.html"
+      ],
+      "protected_ui_source_unchanged": [
+        "js/characters.js",
+        "js/fp-ui.js",
+        "css/fp-ui.css"
+      ],
+      "isolated_test_package": false,
+      "test_server": null
+    },
+    "preview": {
+      "passed": true,
+      "package": "cn.coupleroom.app.preview",
+      "version_code": 3,
+      "version": "1.1.0",
+      "apk_bytes": 5761464,
+      "apk_sha256": "ccf9864d4c902a25adb35e7346c0ffb89f2e73634057afe630c5893511ec4534",
+      "certificate_sha256": "92bf2d453e30f4cc5bacd311754df1e9501810bcca95933321c4bf1dc4bce2d3",
+      "web_assets_match_source": 19,
+      "preview_pages_excluded": [
+        "characters-preview.html",
+        "fp-ui-preview.html"
+      ],
+      "protected_ui_source_unchanged": [
+        "js/characters.js",
+        "js/fp-ui.js",
+        "css/fp-ui.css"
+      ],
+      "isolated_test_package": true,
+      "test_server": "https://api.xn--zbs33ddmy9oeqa.club/couple-room/validation/first-person"
+    }
+  },
+  "checks": [
+    {
+      "check": "isolated_preview_installed_and_cloud_login",
+      "passed": true,
+      "evidence": "04-first-person.png"
+    },
+    {
+      "check": "entry_and_first_time_tutorial_shown",
+      "passed": true,
+      "evidence": "03-entry-or-tutorial.png",
+      "note": "Tutorial appears and dismisses, but its existing visual layout issue is recorded below."
+    },
+    {
+      "check": "real_touchscreen_joystick_moves_player_and_releases_to_idle",
+      "passed": true,
+      "observed_world_distance": 4.516229602677248,
+      "evidence": [
+        "05-joystick-forward.png",
+        "position-before-joystick.json",
+        "position-after-joystick.json"
+      ]
+    },
+    {
+      "check": "real_joystick_does_not_cross_cabinet_front",
+      "passed": true,
+      "observed_position": {
+        "at": 1793214602597,
+        "motion": "idle",
+        "ry": 3.0888051366726987,
+        "x": -1.0938214463241476,
+        "z": -4.0399999
+      },
+      "evidence": "06-cabinet-collision.png"
+    },
+    {
+      "check": "native_horizontal_and_vertical_drag_to_look",
+      "passed": true,
+      "evidence": [
+        "07-photo-target-near.png",
+        "position-after-draglook.json"
+      ],
+      "note": "The upper look limit was exercised by a 1400 physical-pixel vertical drag; exact pitch arithmetic is covered by the FPWorld tests."
+    },
+    {
+      "check": "near_photo_target_highlight_and_original_photo_panel",
+      "passed": true,
+      "evidence": [
+        "07-photo-target-near.png",
+        "08-original-photo-panel.png"
+      ]
+    },
+    {
+      "check": "panel_blocks_movement_and_native_back_restores_controls",
+      "passed": true,
+      "evidence": [
+        "position-input-while-panel.json",
+        "09-panel-close-restores-controls.png"
+      ]
+    },
+    {
+      "check": "native_emote_buttons_publish_wave_jump_nod",
+      "passed": true,
+      "observed_events": [
+        {
+          "name": "wave",
+          "type": "emote",
+          "name_confirmed": "wave"
+        },
+        {
+          "name": "jump",
+          "type": "emote",
+          "name_confirmed": "jump"
+        },
+        {
+          "name": "nod",
+          "type": "emote",
+          "name_confirmed": "nod"
+        }
+      ],
+      "evidence": [
+        "event-wave.json",
+        "event-jump.json",
+        "event-nod.json"
+      ]
+    },
+    {
+      "check": "background_cancels_held_joystick_and_no_resume_drift",
+      "passed": true,
+      "observed": {
+        "moving_before_home": true,
+        "presence_false_in_background": true,
+        "position_stays_still_after_background": true,
+        "idle_after_resume": true,
+        "background_position_delta": 0.0
+      },
+      "evidence": [
+        "background-check.json",
+        "11-background-return.png"
+      ]
+    },
+    {
+      "check": "overview_switch_and_force_stop_relaunch_retains_view",
+      "passed": true,
+      "evidence": [
+        "12-overview-selected.png",
+        "13-restart-keeps-overview.png"
+      ]
+    },
+    {
+      "check": "final_candidate_update_preserves_login_and_overview_preference",
+      "passed": true,
+      "evidence": [
+        "14-final-candidate-retains-overview.png",
+        "15-final-candidate-first-person.png"
+      ]
+    },
+    {
+      "check": "far_interact_tap_does_not_open_panel",
+      "passed": true,
+      "evidence": "16-far-interact-does-not-open-panel.png",
+      "note": "Confirmed in the actual screenshot; an immediately requested UIAutomator tree was transiently empty and was not used as the verdict."
+    },
+    {
+      "check": "actual_peer_browser_poke_received_in_final_android_webview",
+      "passed": true,
+      "sent_at": 1793215255619,
+      "captured_at": 1793215257259,
+      "observed_text": "宛如 戳了你一下",
+      "pink_edge_flash_visible": true,
+      "evidence": "18-peer-poke-webview.png",
+      "note": "Root account-1 Chrome peer sent the event through the isolated PocketBase service; no JS was injected into Android to fake the notification."
+    }
+  ],
+  "permissions": {
+    "production": {
+      "vibrate_declared": true,
+      "internet_declared": true
+    },
+    "preview": {
+      "vibrate_declared": true,
+      "internet_declared": true
+    }
+  },
+  "production_package_metadata_before": [
+    "versionCode=2 minSdk=26 targetSdk=36",
+    "versionName=1.0.1",
+    "lastUpdateTime=2026-10-29 02:07:56",
+    "firstInstallTime=2026-10-29 01:38:27"
+  ],
+  "production_package_metadata_after": [
+    "versionCode=2 minSdk=26 targetSdk=36",
+    "versionName=1.0.1",
+    "lastUpdateTime=2026-10-29 02:07:56",
+    "firstInstallTime=2026-10-29 01:38:27"
+  ],
+  "production_package_not_installed_launched_uninstalled_or_cleared": true,
+  "preview_only_ran_against_isolated_candidate": true,
+  "generated_assets_restored_to_production_source": true,
+  "protected_sources": [
+    {
+      "file": "web/js/characters.js",
+      "unchanged": true,
+      "sha256": "98eb63eb914d9c4c4d05ed6499cdec395e245e66b27681384ac0f3399c5d541f"
+    },
+    {
+      "file": "web/js/fp-ui.js",
+      "unchanged": true,
+      "sha256": "5dc342ec36fbf317374c50ca56cc837e1ebb2e445224283dc73d687db650af5c"
+    },
+    {
+      "file": "web/css/fp-ui.css",
+      "unchanged": true,
+      "sha256": "dd87d91995cb5278040bb6cf560143cfaa9ac3354625b32bea3755017df9732b"
+    },
+    {
+      "file": "web/config.js",
+      "unchanged": true,
+      "sha256": "8a5aac3326cc50bfad9579054a002d0a165235a89f2ac1570b572dde4da83484"
+    }
+  ],
+  "keyboard_input_method_or_capture_settings_changed": false,
+  "known_visual_issues": [
+    {
+      "issue": "Existing tutorial overlay has two labels and dashed circles overlapping at top left",
+      "evidence": "03-entry-or-tutorial.png",
+      "cause": "--gap/--bot are defined on .fp; sibling .fp-tut cannot inherit them. Its .n1/.n3 and rings use these undefined variables.",
+      "status": "Recorded for Claude UI owner; protected UI files were not edited and no layout workaround added."
+    }
+  ],
+  "not_run": [
+    "Two physical Android phones",
+    "Physical vibration or haptic feel (only the normal VIBRATE permission is declared)",
+    "Low-end physical-device performance or a 30 FPS mobile acceptance claim",
+    "Physical touchscreen acceptance on Android versions other than emulator Android 16",
+    "A complete manual walk against every furniture boundary; runtime geometry is separately covered by FPWorld tests"
+  ],
+  "final_preview_state": "Preview force-stopped; no preview process remains. Root subsequently owns the candidate accounts for final browser regression.",
+  "preview_process_running_after_qa": false,
+  "final_presence_sample_note": "The final shared person-row presence sample was active because root had begun its next browser session; it is not attributed to the stopped preview. The earlier exclusive background test independently observed active=false and zero drift."
+}

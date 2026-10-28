@@ -1,0 +1,57 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "check": "separate door spawns face into the room and are collision free",
+      "passed": true
+    },
+    {
+      "check": "camera-relative forward and right movement use consistent character yaw",
+      "passed": true
+    },
+    {
+      "check": "diagonal input is normalized and zero input stays still",
+      "passed": true
+    },
+    {
+      "check": "all rectangular furniture has character-radius clearance, including internal stale poses",
+      "passed": true
+    },
+    {
+      "check": "all circular furniture blocks its expanded radius and repairs exact center poses",
+      "passed": true
+    },
+    {
+      "check": "each room boundary stops movement before leaving the usable floor",
+      "passed": true
+    },
+    {
+      "check": "diagonal approaches slide along the sofa instead of sticking or entering it",
+      "passed": true
+    },
+    {
+      "check": "a long elapsed frame cannot tunnel through the cabinet or sofa",
+      "passed": true
+    },
+    {
+      "check": "repaired out-of-bounds and overlapping wall/furniture poses are usable",
+      "passed": true
+    },
+    {
+      "check": "repeated movement stays valid around every furniture footprint",
+      "passed": true
+    },
+    {
+      "check": "look pitch clamps to sixty degrees and yaw interpolation uses the short arc",
+      "passed": true
+    },
+    {
+      "check": "remote interpolation stays between samples and preserves the latest motion/timestamp",
+      "passed": true
+    },
+    {
+      "check": "invalid numeric network or input values cannot create NaN positions",
+      "passed": true
+    }
+  ]
+}
