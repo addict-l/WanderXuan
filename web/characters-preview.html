@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>小轩和宛如</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: full-bleed 3D stage, floating title card top-left, control drawer at the bottom. */
+:root{--bg:#E9ECF6;--panel:#FFFDFB;--ink:#2B2A3A;--muted:#6C6A80;--chip:#F2F0F8;--accent:#D9456B;--pa:#D9831F;--pb:#2F7BC0;--shadow:0 12px 34px rgba(38,30,80,.16);
+  --display:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#14152A;--panel:#22233B;--ink:#F1EEF8;--muted:#A7A4C0;--chip:#2D2E4C;--accent:#FF6F93;--pa:#FFB25C;--pb:#7DB8F2;--shadow:0 12px 34px rgba(0,0,0,.45);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14152A;--panel:#22233B;--ink:#F1EEF8;--muted:#A7A4C0;--chip:#2D2E4C;--accent:#FF6F93;--pa:#FFB25C;--pb:#7DB8F2;--shadow:0 12px 34px rgba(0,0,0,.45);color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--display);overflow:hidden}
+#stage{position:fixed;inset:0}
+#stage canvas{display:block;touch-action:none;cursor:grab}
+.card{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));background:var(--panel);border-radius:16px;padding:12px 16px;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+.card h1{margin:0;font-size:20px;font-weight:700;letter-spacing:.02em}
+.card h1 .a{color:var(--pa)}.card h1 .b{color:var(--pb)}
+.card p{margin:4px 0 0;font-size:12px;color:var(--muted)}
+.drawer{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));pointer-events:none}
+.box{pointer-events:auto;background:var(--panel);border-radius:18px;box-shadow:var(--shadow);padding:12px 14px;display:grid;gap:10px;width:min(760px,100%);max-height:46vh;overflow:auto}
+.row{display:grid;grid-template-columns:4.2em 1fr;gap:8px;align-items:start}
+.row>*{min-width:0}
+.lbl{font-size:13px;font-weight:600;padding-top:6px}
+.lbl.a{color:var(--pa)}.lbl.b{color:var(--pb)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{border:0;background:var(--chip);color:var(--ink);font:inherit;font-size:13px;padding:6px 11px;border-radius:999px;cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.chips button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sep{width:1px;background:var(--muted);opacity:.3;margin:2px 2px}
+</style>
+</head><body>
+<div id="stage"></div>
+<div class="card"><h1><span class="a">小轩</span> 和 <span class="b">宛如</span></h1><p>拖动旋转 · 滚轮或双指缩放 · 试试"从眼睛看"</p></div>
+<div class="drawer"><div class="box" id="ui"></div></div>
+<script src="vendor/three.min.js"></script>
+<script src="vendor/OrbitControls.js"></script>
+<script src="js/characters.js"></script>
+<script>
+(function(){
+const stage=document.getElementById('stage');
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+renderer.outputEncoding=THREE.sRGBEncoding;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;stage.appendChild(renderer.domElement);
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(32,1,.05,100);camera.position.set(2.6,2.1,5.4);
+const controls=new THREE.OrbitControls(camera,renderer.domElement);controls.target.set(0,1,0);controls.enableDamping=true;controls.enablePan=false;controls.minDistance=2.2;controls.maxDistance=12;controls.maxPolarAngle=1.5;
+scene.add(new THREE.HemisphereLight('#ffffff','#C9A88A',.75));
+const sun=new THREE.DirectionalLight('#FFF4E0',.9);sun.position.set(3,6,4);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-3,right:3,top:3,bottom:-3});sun.shadow.radius=4;scene.add(sun);
+scene.add(new THREE.AmbientLight('#ffffff',.18));
+/* a round rug-stage like the one in the room */
+const rugC=document.createElement('canvas');rugC.width=rugC.height=512;const rg=rugC.getContext('2d');
+['#F3D2D6','#E8577A','#F3D2D6','#FFF3EA','#F4A259','#FFF3EA','#F3D2D6'].forEach((c,k)=>{rg.beginPath();rg.arc(256,256,250-k*34,0,Math.PI*2);rg.fillStyle=c;rg.fill();});
+const rugT=new THREE.CanvasTexture(rugC);rugT.encoding=THREE.sRGBEncoding;
+const rug=new THREE.Mesh(new THREE.CylinderGeometry(2.2,2.3,.12,64),[new THREE.MeshStandardMaterial({color:'#C08B5C'}),new THREE.MeshStandardMaterial({map:rugT,roughness:.9}),new THREE.MeshStandardMaterial({color:'#C08B5C'})]);
+rug.position.y=-.06;rug.receiveShadow=true;scene.add(rug);
+const chars=[CoupleChars.create(THREE,{who:0}),CoupleChars.create(THREE,{who:1})];
+chars[0].group.position.set(-.55,0,0);chars[1].group.position.set(.55,0,0);chars[0].group.rotation.y=.25;chars[1].group.rotation.y=-.25;
+chars.forEach(c=>scene.add(c.group));
+const st=[{motion:'idle',mood:'neutral',ang:Math.PI},{motion:'idle',mood:'neutral',ang:0}];
+const MOODL={neutral:'平常',happy:'开心',miss:'想你',sleepy:'困了',angry:'生气',sad:'委屈',hungry:'饿了'};
+let view='orbit';
+function ui(){
+  const box=document.getElementById('ui');
+  box.innerHTML=[0,1].map(w=>`<div class="row"><span class="lbl ${w?'b':'a'}">${chars[w].name}</span><div class="chips" role="group" aria-label="${chars[w].name}">
+    ${Object.entries(MOODL).map(([k,l])=>`<button type="button" data-w="${w}" data-mood="${k}" aria-pressed="${st[w].mood===k}">${l}</button>`).join('')}<span class="sep" aria-hidden="true"></span>
+    ${[['idle','站着'],['walk','走走'],['sit','坐下']].map(([k,l])=>`<button type="button" data-w="${w}" data-motion="${k}" aria-pressed="${st[w].motion===k}">${l}</button>`).join('')}<span class="sep" aria-hidden="true"></span>
+    ${[['wave','挥手'],['jump','跳一下'],['nod','点头']].map(([k,l])=>`<button type="button" data-w="${w}" data-play="${k}">${l}</button>`).join('')}</div></div>`).join('')+
+    `<div class="row"><span class="lbl">视角</span><div class="chips" role="group" aria-label="视角">${[['orbit','绕着看'],['eye0','从小轩的眼睛看'],['eye1','从宛如的眼睛看']].map(([k,l])=>`<button type="button" data-view="${k}" aria-pressed="${view===k}">${l}</button>`).join('')}</div></div>`;
+}
+document.getElementById('ui').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const w=+b.dataset.w,c=chars[w];
+  if(b.dataset.mood){st[w].mood=b.dataset.mood;c.setMood(b.dataset.mood);}
+  if(b.dataset.motion){st[w].motion=b.dataset.motion;c.setMotion(b.dataset.motion);if(b.dataset.motion!=='walk'){c.group.position.set(w?.55:-.55,b.dataset.motion==='sit'?.0:0,0);c.group.rotation.y=w?-.25:.25;}}
+  if(b.dataset.play)c.play(b.dataset.play);
+  if(b.dataset.view){view=b.dataset.view;controls.enabled=view==='orbit';chars.forEach(x=>x.group.visible=true);if(view!=='orbit')chars[+view.slice(3)].group.visible=false;
+    if(view==='orbit'){camera.position.set(2.6,2.1,5.4);controls.target.set(0,1,0);}}
+  ui();});
+ui();
+function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();}
+addEventListener('resize',resize);resize();
+const clock=new THREE.Clock(),eye=new THREE.Vector3(),look=new THREE.Vector3();
+(function loop(){
+  const dt=Math.min(clock.getDelta(),.05);
+  chars.forEach((c,w)=>{const s=st[w];
+    if(s.motion==='walk'){s.ang+=dt*.55;const r=1.2,x=Math.cos(s.ang)*r,z=Math.sin(s.ang)*r*.8;const p=c.group.position;const dx=x-p.x,dz=z-p.z;if(dx||dz)c.group.rotation.y=Math.atan2(dx,dz);p.set(x,0,z);}
+    c.update(dt);});
+  if(view!=='orbit'){const me=chars[+view.slice(3)],other=chars[1-+view.slice(3)];me.getEyeWorldPosition(eye);other.getEyeWorldPosition(look);look.y-=.15;camera.position.copy(eye);camera.lookAt(look);}
+  else controls.update();
+  renderer.render(scene,camera);requestAnimationFrame(loop);})();
+})();
+</script>
+</body></html>
