@@ -85,6 +85,9 @@ let state=null;
 if(LIVE) state=blank();
 else{try{state=JSON.parse(localStorage.getItem(KEY));}catch(e){}if(!state||state.v!==2) state=sample();}
 state.timeMode='auto';
+for(const key of ['positions','presence'])if(!Array.isArray(state[key]))state[key]=[null,null];
+if(!Array.isArray(state.gestures))state.gestures=[[],[]];
+if(!Array.isArray(state.profileEdits))state.profileEdits=[{},{}];
 const me=()=>state.me,other=()=>1-state.me;
 
 const subs=[];
@@ -101,9 +104,27 @@ function tzParts(tz){try{const s=new Intl.DateTimeFormat('en-GB',{timeZone:tz,ho
 const phaseFor=h=>h>=6&&h<8?'dawn':h>=8&&h<17?'day':h>=17&&h<19.5?'dusk':'night';
 function cityPhase(w){if(w===state.me&&state.timeMode!=='auto')return state.timeMode;const p=tzParts(state.cities[w].tz);return phaseFor(p.h+p.m/60);}
 const phase=()=>{if(state.timeMode!=='auto')return state.timeMode;const d=new Date();return phaseFor(d.getHours()+d.getMinutes()/60);};
-const online=w=>LIVE?(w===state.me||(Sync.present&&Sync.present.has(w))||Date.now()-state.lastSeen[w]<3*60e3):Date.now()-state.lastSeen[w]<5*60e3;
+const online=w=>LIVE&&Sync.isOnline?Sync.isOnline(w):Date.now()-state.lastSeen[w]<5*60e3;
 function rel(ts){const m=Math.round((Date.now()-ts)/6e4);return m<1?'刚刚':m<60?`${m} 分钟前`:m<1440?`${Math.round(m/60)} 小时前`:`${Math.round(m/1440)} 天前`;}
 function heartbeat(){state.lastSeen[state.me]=Date.now();save();}
+
+/* Runtime movement is kept out of normal save() so walking is published at 1 Hz. */
+let lastEmoteAt=-Infinity,lastPokeAt=-Infinity;
+function setPosition(pos,opts){
+  if(LIVE)return Sync.setPosition(pos,opts);
+  if(!pos||!['x','z','ry'].every(k=>Number.isFinite(pos[k])))return false;
+  state.positions[state.me]={x:pos.x,z:pos.z,ry:pos.ry,motion:pos.motion||'idle',at:Date.now()};return true;
+}
+function sendEmote(name){
+  if(!['wave','jump','nod'].includes(name)||Date.now()-lastEmoteAt<1000)return null;lastEmoteAt=Date.now();
+  const event=LIVE?Sync.sendEmote(name):{who:state.me,name,id:uid(),at:Date.now()};
+  if(event)emit('emote',{...event,who:state.me,name});return event;
+}
+function sendPoke(target){
+  if(target!==1-state.me||Date.now()-lastPokeAt<1000)return null;lastPokeAt=Date.now();
+  const line=pokeLine(target),event=LIVE?Sync.sendPoke(target,line):{from:state.me,to:target,line,id:uid(),at:Date.now()};
+  if(event){state.lastPoke=Date.now();emit('poke',target);}return event;
+}
 
 /* ---------------- calendar ---------------- */
 const daysTogether=()=>Math.round((today()-parseD(state.start))/DAY)+1;
@@ -486,7 +507,7 @@ function act(kind,i){
     case 'window':openWindow();break;
     case 'mood':openMood();break;
     case 'settings':openSettings();break;
-    case 'plush':if(i===state.me)openMood();else{state.lastPoke=Date.now();emit('poke',i);}break;
+    case 'plush':if(i===state.me)openMood();else sendPoke(i);break;
     case 'lamp':toast(online(i)?`${n[i]} 在线，这边的灯亮着`:`${n[i]} 不在，上次来是 ${rel(state.lastSeen[i])}`);break;
     case 'bin':{const k=state.todos.filter(t=>t.done).length;toast(k?`垃圾桶里有 ${k} 个纸团，都是完成的事`:'垃圾桶是空的');break;}
   }
@@ -550,5 +571,5 @@ const ready=(async()=>{
 })();
 
 window.__back=()=>{if(scrim){closeModal();return true;}return false;};
-window.App={ready,state,on,emit,save,esc,phase,cityPhase,tzParts,wName,online,rel,daysTogether,eventsOn,upcoming,T,ds,parseD,plant,pokeLine,drawFace,picSrc,ensureFonts,mountHud,tip,toast,act,MOODS};
+window.App={ready,state,on,emit,save,setPosition,sendEmote,sendPoke,esc,phase,cityPhase,tzParts,wName,online,rel,daysTogether,eventsOn,upcoming,T,ds,parseD,plant,pokeLine,drawFace,picSrc,ensureFonts,mountHud,tip,toast,act,MOODS};
 })();

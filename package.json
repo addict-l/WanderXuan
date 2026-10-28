@@ -1,0 +1,12 @@
+{
+  "name": "wanderxuan",
+  "version": "1.1.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "test:browser": "node tests/first-person.e2e.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}
