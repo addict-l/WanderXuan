@@ -28,6 +28,7 @@ function create(options){
   let preferred='fp';
   try{if(localStorage.getItem(VIEW_KEY)==='overview')preferred='overview';}catch(_){}
   const ui=FPUI.mount({names:[...state.names],me:self,view:'overview'});
+  const partnerIndicator=ui.el.querySelector('.fp-partner');
   chars.forEach((c,w)=>{
     const spawn=world.SPAWNS[w];c.group.position.set(spawn.x,0,spawn.z);c.group.rotation.y=spawn.ry;
     scene.add(c.group);c.group.userData.characterWho=w;
@@ -176,6 +177,13 @@ function create(options){
     projected.project(camera);
     const inFrame=projected.z>=-1&&projected.z<=1&&Math.abs(projected.x)<=1&&Math.abs(projected.y)<=1;
     ui.setPartner({visible:!inFrame,angle:world.wrapAngle(yaw-Math.atan2(dx,dz)),distance,name:state.names[w]});
+    if(!inFrame&&partnerIndicator){
+      // FPUI supplies the bearing. Clamp its existing indicator away from
+      // host cutouts without moving the canvas or the center aiming ray.
+      const left=partnerIndicator.style.left,top=partnerIndicator.style.top;
+      partnerIndicator.style.left=`clamp(calc(var(--safe-left,0px) + 46px),${left},calc(100% - var(--safe-right,0px) - 46px))`;
+      partnerIndicator.style.top=`clamp(calc(var(--safe-top,0px) + 110px),${top},calc(100% - var(--safe-bottom,0px) - 90px))`;
+    }
   }
   function update(dt){
     if(disposed)return;

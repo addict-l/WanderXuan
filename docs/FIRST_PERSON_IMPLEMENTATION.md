@@ -70,10 +70,11 @@ App 事件：本地 `emote` / `poke`，远端 `remote-emote` / `remote-poke`。p
 
 - 旧行缺少新字段时安全默认，旧面板、照片文件令牌及业务集合不变。
 - 完整位置与动作同步需要两端都更新。旧 1.0.0 客户端会整行覆盖 person JSON，无法替旧客户端补上本人行所有权协议。
-- 正式 APK 为 `cn.coupleroom.app`，1.1.0/code 3，沿用原签名。
+- 正式 APK 为 `cn.coupleroom.app`，1.1.1/code 4，沿用原签名。
 - `-ProomTestServer=<httpsURL>` 生成独立 `cn.coupleroom.app.preview`，只改构建生成的配置，不改 `web/config.js`；验收不使用生产房间。
 - `characters-preview.html`、`fp-ui-preview.html` 保留在网页源码，两个 APK 均排除这两页。提交前恢复生产 assets。
 - 增加普通 `VIBRATE` 权限供现成通知调用使用；物理触感仍需真机确认。
+- 1.1.1 横竖屏采用沉浸窗口和 cutout 绘制，画面与准星覆盖完整 WebView；`viewport.css` 只为现有控件/面板留安全区。旧 WebView 使用原生传入的 `--android-safe-top/right/bottom/left`（CSS px），与 `env()` 取最大值。键盘仅在原生缩小一次；旋转用实际 stage 的 ResizeObserver 更新画布和相机，不重置小人位置。
 
 ## 可复核的检查
 
@@ -91,6 +92,8 @@ cd android
 浏览器脚本要求使用 `/validation/` 下的隔离后端。凭据 JSON 结构为 `server` 与 `accounts`，每个账号含 `name`、`email`、`who`、`password`；凭据不提交、不写入 APK 或报告。
 
 测试结果、截图和按需求逐项的验收记录见 [validation/first-person/README.md](validation/first-person/README.md)。桌面 Chrome 的帧率记录不代表中低端 Android 真机达到 30 FPS。
+
+1.1.1 的横屏边缘修复与键盘/安全区复核见 [validation/landscape/README.md](validation/landscape/README.md)，专项脚本为 `npm run test:viewport`。
 
 ## 交给 Claude 的 UI 问题
 

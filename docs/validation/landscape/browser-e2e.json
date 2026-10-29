@@ -1,0 +1,117 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "check": "login_entry_tutorial_and_real_webgl",
+      "passed": true,
+      "seconds": 10.7
+    },
+    {
+      "check": "partner_arrow_and_two_account_presence",
+      "passed": true,
+      "seconds": 0.01
+    },
+    {
+      "check": "far_photo_cannot_be_interacted_with",
+      "passed": true,
+      "seconds": 0.49
+    },
+    {
+      "check": "movement_reaches_partner_and_is_seen_by_the_other_client",
+      "passed": true,
+      "seconds": 1.69
+    },
+    {
+      "check": "wave_is_played_once_on_both_clients",
+      "passed": true,
+      "seconds": 0.48
+    },
+    {
+      "check": "poking_partner_uses_actual_ui_and_notifies_the_other_phone_ui",
+      "passed": true,
+      "seconds": 1.35
+    },
+    {
+      "check": "mood_panel_updates_the_remote_character",
+      "passed": true,
+      "seconds": 1.55
+    },
+    {
+      "check": "offline_partner_returns_to_sofa_and_online_partner_interpolates_back",
+      "passed": true,
+      "seconds": 0.85
+    },
+    {
+      "check": "near_photo_highlights_and_opens_original_panel",
+      "passed": true,
+      "seconds": 5.35
+    },
+    {
+      "check": "menu_clears_held_movement_without_resuming_stale_input",
+      "passed": true,
+      "seconds": 1.17
+    },
+    {
+      "check": "overview_and_restart_remember_view_without_replaying_actions",
+      "passed": true,
+      "seconds": 3.89
+    },
+    {
+      "check": "no_runtime_errors",
+      "passed": true,
+      "seconds": 0
+    }
+  ],
+  "failure": null,
+  "observations": [
+    {
+      "view": "overview",
+      "self": 0,
+      "entering": false,
+      "position": {
+        "x": -0.65,
+        "z": 3.4,
+        "ry": 3.141592653589793
+      },
+      "pitch": 0,
+      "moving": false,
+      "blocked": false,
+      "partner": {
+        "x": 0.6500000000000004,
+        "y": 0,
+        "z": 3.4,
+        "ry": -3.141592653589793,
+        "motion": "idle"
+      },
+      "target": null,
+      "highlighted": false,
+      "fps": 59.1,
+      "outline": true
+    },
+    {
+      "view": "fp",
+      "self": 1,
+      "entering": false,
+      "position": {
+        "x": 0.65,
+        "z": 3.4,
+        "ry": 3.141592653589793
+      },
+      "pitch": 0,
+      "moving": false,
+      "blocked": false,
+      "partner": {
+        "x": -0.6499999999999999,
+        "y": 0,
+        "z": 3.4,
+        "ry": -3.141592653589793,
+        "motion": "idle"
+      },
+      "target": null,
+      "highlighted": false,
+      "fps": 60,
+      "outline": true
+    }
+  ],
+  "environment": "Two headless Chromium/WebGL clients with real isolated PocketBase; not physical Android performance acceptance"
+}

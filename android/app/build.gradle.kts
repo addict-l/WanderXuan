@@ -20,7 +20,7 @@ android {
     compileSdk = 36
     defaultConfig {
         applicationId = if (roomTestServer == null) "cn.coupleroom.app" else "cn.coupleroom.app.preview"
-        minSdk = 26; targetSdk = 36; versionCode = 3; versionName = "1.1.0"
+        minSdk = 26; targetSdk = 36; versionCode = 4; versionName = "1.1.1"
         manifestPlaceholders["appLabel"] = if (roomTestServer == null) "@string/app_name" else "双人小屋验收版"
     }
     signingConfigs {
@@ -36,7 +36,10 @@ android {
     }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
 }
-dependencies { implementation("androidx.webkit:webkit:1.14.0") }
+dependencies {
+    implementation("androidx.webkit:webkit:1.14.0")
+    implementation("androidx.core:core:1.17.0")
+}
 
 val syncWebAssets by tasks.registering(Sync::class) {
     inputs.property("roomTestServer", roomTestServer ?: "")

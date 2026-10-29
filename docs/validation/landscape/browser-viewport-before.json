@@ -1,0 +1,12 @@
+{
+  "passed": false,
+  "baseline": true,
+  "checks": [
+    {
+      "check": "portrait_canvas_and_center_aim_fill_viewport",
+      "passed": true
+    }
+  ],
+  "failure": "hud is behind the top cutout",
+  "environment": "Real Chrome/WebGL + isolated PocketBase, Wanru account; injected numeric safe-area values model the Android host, not a physical phone"
+}

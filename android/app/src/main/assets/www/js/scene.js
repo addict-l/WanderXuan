@@ -423,6 +423,9 @@ const tmpV=new THREE.Vector3();
 function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);cv.style.width=w+'px';cv.style.height=h+'px';
   if(firstPerson)firstPerson.resize(w,h);else{camera.aspect=w/h;camera.fov=w/h<.8?60:36;controls.maxDistance=w/h<.8?30:26;camera.updateProjectionMatrix();}}
 window.addEventListener('resize',resize);resize();
+// Native rotation/IME relayout can settle after the window resize event.
+// Size from the actual stage so no old portrait-width canvas remains visible.
+if(window.ResizeObserver)new ResizeObserver(resize).observe(stage);
 if(stage.clientWidth/stage.clientHeight<.8)camera.position.set(15.5,12,15.5);
 const clock=new THREE.Clock();let skyAcc=0;
 function loop(){

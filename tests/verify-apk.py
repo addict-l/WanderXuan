@@ -55,7 +55,7 @@ def main():
     package = re.search(r"package: name='([^']+)' versionCode='([^']+)' versionName='([^']+)'", badging)
     expected_package = "cn.coupleroom.app.preview" if test_server else "cn.coupleroom.app"
     expected_label = "双人小屋验收版" if test_server else "双人小屋"
-    assert package and package.groups() == (expected_package, "3", "1.1.0"), "Unexpected package or version"
+    assert package and package.groups() == (expected_package, "4", "1.1.1"), "Unexpected package or version"
     assert "application-label:'" + expected_label + "'" in badging, "Unexpected application label"
     signature = subprocess.check_output([str(build_tools / "apksigner"), "verify", "--verbose", "--print-certs", str(apk)], text=True, env=env)
     certificate = re.search(r"Signer #1 certificate SHA-256 digest: (\w+)", signature)

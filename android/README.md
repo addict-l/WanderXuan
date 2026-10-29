@@ -6,7 +6,7 @@ Android Studio 打开本目录；使用 JDK 21、Android SDK Platform 36，最�
 
 macOS：`./scripts/build.sh`；其他系统设置 `JAVA_HOME` / Android SDK 后执行 `gradlew assembleRelease`（Windows 为 `gradlew.bat assembleRelease`）。构建会自动将相邻 `../web/` 同步到 APK assets。APK 输出：`app/build/outputs/apk/release/`。
 
-版本 1.1.0（versionCode 3）沿用原包名和签名，可覆盖安装旧包并保留登录。构建同步明确排除 `characters-preview.html` 和 `fp-ui-preview.html`；这两个预览页只保留在网页源码目录中。
+版本 1.1.1（versionCode 4）沿用原包名和签名，可覆盖安装旧包并保留登录。构建同步明确排除 `characters-preview.html` 和 `fp-ui-preview.html`；这两个预览页只保留在网页源码目录中。
 
 在工程根目录执行 `python3 tests/verify-apk.py android/app/build/outputs/apk/release/app-release.apk`，检查 APK 版本、签名、网页资源一致性及预览页排除。
 
@@ -42,3 +42,5 @@ keyPassword=your-key-password
 - 页面外链交给系统浏览器；返回键先调用网页 `window.__back()` 关闭面板。
 - HTTPS 证书由系统验证；无明文网络、无跨域 JavaScript 原生桥、无 WebView 远程调试。
 - 独立包名 `cn.coupleroom.app`，关闭系统备份，不修改设备键盘或输入法。
+- 横竖屏均让房间画面延伸到屏幕边缘；从边缘滑动可临时显示系统栏。原生只为键盘缩小 WebView，刘海/系统手势区域交给网页控件的安全区留距，不为整个画面留背景带。
+- WebView 133 等旧版本通过原生传入的 `--android-safe-*` CSS 数值获取安全区，较新 WebView 的 `env(safe-area-inset-*)` 与其取最大值，不重复累加；键盘收起与旋转会刷新四边数值。无 JavaScript 原生对象桥。

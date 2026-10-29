@@ -1,0 +1,30 @@
+/* Host viewport adaptation. Keep Claude's control design and source intact.
+   WebView <136 needs the numeric native fallback; max avoids double insets
+   when a newer WebView or a browser also provides CSS safe-area values. */
+:root{
+  --safe-top:max(env(safe-area-inset-top,0px),var(--android-safe-top,0px));
+  --safe-right:max(env(safe-area-inset-right,0px),var(--android-safe-right,0px));
+  --safe-bottom:max(env(safe-area-inset-bottom,0px),var(--android-safe-bottom,0px));
+  --safe-left:max(env(safe-area-inset-left,0px),var(--android-safe-left,0px));
+  padding:0;
+}
+.hud{top:calc(12px + var(--safe-top));left:max(16px,var(--safe-left));
+  max-width:calc(100% - max(16px,var(--safe-left)) - max(16px,var(--safe-right)))}
+.fp{--gap:max(18px,var(--safe-left));--gapr:max(18px,var(--safe-right));--bot:calc(22px + var(--safe-bottom))}
+.fp-top{top:calc(12px + var(--safe-top))}
+.fp-poke{top:calc(76px + var(--safe-top))}
+.fp-keys{bottom:calc(14px + var(--safe-bottom))}
+.dock{padding:0 max(16px,var(--safe-right)) calc(14px + var(--safe-bottom)) max(16px,var(--safe-left))}
+.toast{bottom:calc(104px + var(--safe-bottom))}
+body.fp-mode .toast{bottom:calc(184px + var(--safe-bottom))}
+.scrim{padding:calc(16px + var(--safe-top)) max(16px,var(--safe-right)) calc(16px + var(--safe-bottom)) max(16px,var(--safe-left))}
+.login{padding:calc(24px + var(--safe-top)) max(16px,var(--safe-right)) calc(24px + var(--safe-bottom)) max(16px,var(--safe-left));overflow:auto}
+.login-card{margin:auto;min-height:0;max-height:100%;overflow:auto}
+.sheet{min-height:0;max-height:calc(100dvh - var(--safe-top) - var(--safe-bottom) - 32px)}
+@media (max-width:520px){
+  .scrim{padding:var(--safe-top) var(--safe-right) 0 var(--safe-left)}
+  .sheet{max-height:min(88%,calc(100dvh - var(--safe-top) - 8px));padding-bottom:calc(22px + var(--safe-bottom))}
+}
+@media (orientation:landscape) and (max-height:520px){
+  .login{align-items:start}
+}
