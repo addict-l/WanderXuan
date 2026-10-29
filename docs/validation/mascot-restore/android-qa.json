@@ -1,0 +1,168 @@
+{
+  "recordedAt": "2026-10-29T04:53:39.260197+00:00",
+  "version": "1.1.2",
+  "versionCode": 5,
+  "device": "existing emulator-5554 / Android16 API36",
+  "package": "cn.coupleroom.app.preview",
+  "apk": "android/releases/CoupleRoom-1.1.2-preview.apk",
+  "apkSha256": "436b65d04885e40619c0a788de097f898b77862983f7abc51092b0ac37344ec3",
+  "summary": {
+    "checksPassed": 7,
+    "checksTotal": 7,
+    "physicalPhoneTested": false,
+    "sourceModifiedByQA": false,
+    "previewStopped": true,
+    "originalRotationRestored": true
+  },
+  "checks": [
+    {
+      "id": "overview-keepsakes-and-characters",
+      "status": "passed",
+      "screenshot": "04-overview-sofa-close.png",
+      "method": "Actual touchscreen overview toggle, one-finger Orbit rotation and two-finger zoom",
+      "observed": "Original orange bear and blue rabbit both visible on sofa, new female character remains seated at center front and new male character remains in room."
+    },
+    {
+      "id": "first-person-walk-near-sofa",
+      "status": "passed",
+      "screenshots": [
+        "09-fp-own-bear-near.png",
+        "11-fp-partner-bunny-near.png"
+      ],
+      "method": "Actual Android touchscreen joystick navigation and look drags; no runtime JS pose teleport",
+      "observed": "FP remains available; walked from spawn to sofa. Orange bear visible near x=-2.54,z=-.67; blue rabbit clearly visible near x=-2.58,z=.79.",
+      "positionEvidence": [
+        "pose-own-bear-near.json",
+        "pose-bunny-near.json"
+      ]
+    },
+    {
+      "id": "own-bear-opens-original-mood-panel",
+      "status": "passed",
+      "screenshot": "10-own-bear-mood-panel.png",
+      "method": "Actual screen tap on exposed orange bear face from FP, not dock mood shortcut",
+      "observed": "Opened original 唐小轩 今天的心情 panel containing six mood options. No mood option changed during this QA.",
+      "uiHierarchy": "10-mood-hierarchy.xml"
+    },
+    {
+      "id": "partner-rabbit-bounce-and-bubble",
+      "status": "passed",
+      "screenshots": [
+        "13-fp-bunny-look-up.png",
+        "14-bunny-bubble-1.png",
+        "14-bunny-bubble-2.png"
+      ],
+      "method": "Actual screen tap on original blue rabbit; then native screencap sequence",
+      "observed": "Blue rabbit visibly rises above resting cushion and shows readable 宛如：干嘛呀～ speech bubble. New female character also jumps.",
+      "backendEvidence": "poke-published.json",
+      "backendObservation": "Isolated candidate person0 events contains type=poke,to=1,line=干嘛呀～ matching the actual local bubble. Candidate only; no production account accessed."
+    },
+    {
+      "id": "landscape-90-fullscreen",
+      "status": "passed",
+      "screenshot": "15-overview-final-90.png",
+      "nativeWebViewFramePx": [
+        0,
+        0,
+        2424,
+        1080
+      ],
+      "statusBarsVisible": false,
+      "navigationBarsVisible": false,
+      "cutoutSide": "left",
+      "observed": "Actual room content extends edge-to-edge and controls stay inside native cutout-safe side."
+    },
+    {
+      "id": "landscape-270-fullscreen",
+      "status": "passed",
+      "screenshot": "16-overview-final-270.png",
+      "nativeWebViewFramePx": [
+        0,
+        0,
+        2424,
+        1080
+      ],
+      "statusBarsVisible": false,
+      "navigationBarsVisible": false,
+      "cutoutSide": "right",
+      "observed": "Reverse landscape retains full screen and control placement responds to opposite cutout side."
+    },
+    {
+      "id": "portrait-and-original-rotation-restored",
+      "status": "passed",
+      "screenshot": "17-portrait-restored.png",
+      "nativeWebViewFramePx": [
+        0,
+        0,
+        1080,
+        2424
+      ],
+      "statusBarsVisible": false,
+      "navigationBarsVisible": false,
+      "restoredRotation": {
+        "mode": "free",
+        "accelerometer_rotation": "1",
+        "user_rotation": "0"
+      }
+    }
+  ],
+  "visualObservation": {
+    "status": "perspective occlusion observed",
+    "evidence": "04-overview-sofa-close.png",
+    "detail": "New female character sits on the front center of the sofa. Hair can partially occlude toy edges from some overview angles; actual camera rotation toward the front, zoom and near first-person views confirm both original toys remain present at their original positions."
+  },
+  "preservation": {
+    "productionApp": "Existing cn.coupleroom.app was not launched, updated, removed or cleared by this QA. Package metadata matches before.",
+    "productionPackageMetadataBefore": {
+      "versionCode": "2 minSdk=26 targetSdk=36",
+      "versionName": "1.0.1",
+      "firstInstallTime": "2026-10-29 01:38:27",
+      "lastUpdateTime": "2026-10-29 02:07:56"
+    },
+    "productionPackageMetadataAfter": {
+      "versionCode": "2 minSdk=26 targetSdk=36",
+      "versionName": "1.0.1",
+      "firstInstallTime": "2026-10-29 01:38:27",
+      "lastUpdateTime": "2026-10-29 02:07:56"
+    },
+    "previewPackageMetadataAfter": {
+      "versionCode": "5 minSdk=26 targetSdk=36",
+      "versionName": "1.1.2",
+      "firstInstallTime": "2026-10-29 03:04:57",
+      "lastUpdateTime": "2026-10-29 12:43:58"
+    },
+    "keyboard": "No keyboard/IME/language/hardware-keyboard/capture settings changed. Only normal touch actions; no input settings opened.",
+    "rotationBefore": {
+      "mode": "free",
+      "accelerometer_rotation": "1",
+      "user_rotation": "0"
+    },
+    "rotationAfter": {
+      "mode": "free",
+      "accelerometer_rotation": "1",
+      "user_rotation": "0"
+    },
+    "protectedSourceFiles": {
+      "web/js/characters.js": {
+        "sha256": "98eb63eb914d9c4c4d05ed6499cdec395e245e66b27681384ac0f3399c5d541f",
+        "byteEqualsOriginUiCharacters": true
+      },
+      "web/js/fp-ui.js": {
+        "sha256": "5dc342ec36fbf317374c50ca56cc837e1ebb2e445224283dc73d687db650af5c",
+        "byteEqualsOriginUiCharacters": true
+      },
+      "web/css/fp-ui.css": {
+        "sha256": "dd87d91995cb5278040bb6cf560143cfaa9ac3354625b32bea3755017df9732b",
+        "byteEqualsOriginUiCharacters": true
+      }
+    },
+    "sourceEditsByQA": []
+  },
+  "cleanup": "Home then force-stop cn.coupleroom.app.preview; pid confirmed absent. Original free rotation, accelerometer_rotation=1 and user_rotation=0 restored.",
+  "limits": [
+    "Android emulator only; no physical phone used",
+    "Physical haptics and low-end phone performance unverified",
+    "This change-specific QA covers toy restoration/interactions and rotation; earlier first-person and landscape reports retain other regression results",
+    "Remote browser recipient behavior covered by parent separately; this report does not claim two phones tested"
+  ]
+}

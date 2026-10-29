@@ -318,6 +318,7 @@ const pillow=box(.18,.42,.55,M('#F3C6CF'),-.18,1.02,-1.0,sofa);pillow.rotation.x
 const throwB=box(.6,.04,.7,M('#F4A259'),.1,.79,.95,sofa);throwB.rotation.z=-.05;
 function plush(color,isBunny,z,w){
   const p=new THREE.Group();p.position.set(-.05,.76,z);sofa.add(p);const m=M(color,{roughness:1});
+  p.name='sofa-plush-'+w;p.userData.sofaPlushWho=w;
   sph(.24,m,0,.2,0,p).scale.set(1,.9,1);sph(.21,m,0,.56,0,p);
   if(isBunny){[-.07,.07].forEach(dz=>{const e=sph(.06,m,0,.82,dz,p);e.scale.set(.8,2.6,.8);});}else{[-.15,.15].forEach(dz=>sph(.075,m,0,.72,dz,p));}
   sph(.08,M('#FFF3EA',{roughness:1}),.18,.18,0,p).scale.set(.6,1,1);
@@ -412,11 +413,18 @@ const cv=renderer.domElement;
 cv.addEventListener('pointermove',e=>{if(firstPerson&&!firstPerson.allowsOverviewInput()){hover=null;downAt=null;A.tip(null);return;}if(downAt&&e.buttons){A.tip(null);return;}const o=e.pointerType==='mouse'?pick(e):null;hover=o;cv.style.cursor=o?'pointer':'grab';o?A.tip(label(o.userData.meta),e.clientX,e.clientY):A.tip(null);});
 cv.addEventListener('pointerleave',()=>{hover=null;A.tip(null);});
 cv.addEventListener('pointerdown',e=>{if(firstPerson&&!firstPerson.allowsOverviewInput())return;downAt=[e.clientX,e.clientY];});
-cv.addEventListener('pointerup',e=>{if(firstPerson&&!firstPerson.allowsOverviewInput()){downAt=null;return;}if(!downAt)return;const mv=Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1]);downAt=null;if(mv>6)return;const o=pick(e);if(!o)return;const m=o.userData.meta;A.act(m.kind,m.i);});
+cv.addEventListener('pointerup',e=>{if(firstPerson&&!firstPerson.allowsOverviewInput()){downAt=null;return;}if(!downAt)return;const mv=Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1]);downAt=null;if(mv>6)return;const o=pick(e);if(!o)return;if(firstPerson)firstPerson.activate(o);else{const m=o.userData.meta;A.act(m.kind,m.i);}});
 
 /* speech bubble over a plush */
 const bubble=document.createElement('div');bubble.className='bubble';bubble.setAttribute('aria-live','polite');document.body.appendChild(bubble);let bubbleFor=null,bubbleT=0;
-function poke(w,line){const c=firstPerson&&firstPerson.getCharacter(w);if(c){c.play('jump');if(w===S.me&&firstPerson.getView()==='fp')return;bubbleFor={p:c.group,height:c.info.height+.25};}else{const pl=plushes[w];pl.p.userData.bounce=1;bubbleFor=pl;}bubble.textContent=`${S.names[w]}：${line||A.pokeLine(w)}`;bubbleT=2.4;bubble.classList.add('on');}
+function poke(w,line,source){
+  const c=firstPerson&&firstPerson.getCharacter(w),pl=plushes[w];
+  const toy=source&&source.userData.sofaPlushWho===w;
+  if(c)c.play('jump');
+  if(toy||!c){pl.p.userData.bounce=1;bubbleFor=pl;}
+  else{if(w===S.me&&firstPerson.getView()==='fp')return;bubbleFor={p:c.group,height:c.info.height+.25};}
+  bubble.textContent=`${S.names[w]}：${line||A.pokeLine(w)}`;bubbleT=2.4;bubble.classList.add('on');
+}
 const tmpV=new THREE.Vector3();
 
 /* ---------- sizing + loop ---------- */
@@ -455,7 +463,7 @@ function loop(){
 /* ---------- boot ---------- */
 function drawAllPhotos(){slots.forEach(drawSlot);}
 drawAllPhotos();buildBooks();drawBoard();buildNotes();buildBin();drawFridge();drawCal();wins.forEach(w=>{drawSky(w,0);drawPlaque(w);});plushes.forEach(drawPlush);buildEnvelopes();buildPlant();applyLight();
-plushes.forEach(pl=>{pl.p.visible=false;unHot(pl.p);});
+// The original sofa keepsakes coexist with the walkable characters.
 shelf.userData.meta={kind:'books',i:0,label:()=>`书架 · ${S.books.length?S.books.length+' 本回忆':'放一本回忆'}`};adopt(shelf,shelf);
 controls.update();
 firstPerson=FirstPersonController.create({THREE,world:FPWorld,App:A,scene,camera,renderer,orbit:controls,FPUI,CoupleChars,hot,

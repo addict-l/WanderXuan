@@ -20,7 +20,7 @@ android {
     compileSdk = 36
     defaultConfig {
         applicationId = if (roomTestServer == null) "cn.coupleroom.app" else "cn.coupleroom.app.preview"
-        minSdk = 26; targetSdk = 36; versionCode = 4; versionName = "1.1.1"
+        minSdk = 26; targetSdk = 36; versionCode = 5; versionName = "1.1.2"
         manifestPlaceholders["appLabel"] = if (roomTestServer == null) "@string/app_name" else "双人小屋验收版"
     }
     signingConfigs {

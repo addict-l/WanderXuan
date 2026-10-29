@@ -12,7 +12,7 @@ FPUI（原有界面与事件）
        └─ App / Sync：本人 person 行、资料补丁、位置与事件
 ```
 
-`characters.js`、`fp-ui.js`、`fp-ui.css` 保持原样，没有另画按钮。`scene.js` 保留房间、灯光、原面板和俯瞰操作；两个小人代替沙发上旧玩偶的点击对象。
+`characters.js`、`fp-ui.js`、`fp-ui.css` 保持原样，没有另画按钮。`scene.js` 保留房间、灯光、原面板和俯瞰操作；沙发上的原小熊、小兔与可走动的小人同时保留，各自可以点击。
 
 ## 相机、移动与交互
 
@@ -22,7 +22,7 @@ FPUI（原有界面与事件）
 - 碰撞使用文档中的矩形、圆和房间边界，分小步移动并沿边滑动。陈旧或非法远端位置先修复到合法位置。
 - 准星与直接点击都重新执行 2.5 单位射线检查；只命中可见角色/物件。目标变化时才更新 FPUI 目标名及材质微光，面板继续走原来的 `App.act()`。
 - 面板、菜单、教程、进门遮罩、失焦和后台均停止走路。通过既有 `pointercancel` / `blur` 输入路径清理摇杆与 WASD，没有修改键盘或输入法设置。多指拖看整组结束前不会被当成轻点。
-- 对方位置在 0.4 秒内插值；角度沿最短弧旋转。离线或没有位置数据时坐回沙发；双方距离小于 1.2 时转头看向彼此。
+- 对方位置在 0.4 秒内插值；角度沿最短弧旋转。离线或没有位置数据时坐在沙发中间偏前的位置，避开原来的两只玩偶；双方距离小于 1.2 时转头看向彼此。
 - 低配置触屏设备使用小人模块现有的 `outline: false` 选项，造型源文件未改。
 
 ## 状态和同步字段
@@ -70,7 +70,7 @@ App 事件：本地 `emote` / `poke`，远端 `remote-emote` / `remote-poke`。p
 
 - 旧行缺少新字段时安全默认，旧面板、照片文件令牌及业务集合不变。
 - 完整位置与动作同步需要两端都更新。旧 1.0.0 客户端会整行覆盖 person JSON，无法替旧客户端补上本人行所有权协议。
-- 正式 APK 为 `cn.coupleroom.app`，1.1.1/code 4，沿用原签名。
+- 正式 APK 为 `cn.coupleroom.app`，1.1.2/code 5，沿用原签名。
 - `-ProomTestServer=<httpsURL>` 生成独立 `cn.coupleroom.app.preview`，只改构建生成的配置，不改 `web/config.js`；验收不使用生产房间。
 - `characters-preview.html`、`fp-ui-preview.html` 保留在网页源码，两个 APK 均排除这两页。提交前恢复生产 assets。
 - 增加普通 `VIBRATE` 权限供现成通知调用使用；物理触感仍需真机确认。
@@ -94,6 +94,8 @@ cd android
 测试结果、截图和按需求逐项的验收记录见 [validation/first-person/README.md](validation/first-person/README.md)。桌面 Chrome 的帧率记录不代表中低端 Android 真机达到 30 FPS。
 
 1.1.1 的横屏边缘修复与键盘/安全区复核见 [validation/landscape/README.md](validation/landscape/README.md)，专项脚本为 `npm run test:viewport`。
+
+1.1.2 恢复原沙发玩偶，与新小人共存；离线小人展示座位位于沙发前缘中间。点击来源经 controller 的 `activate(owner)` 同步传递给本地 `onPoke`，确保玩偶气泡锚定原玩偶，远端仍使用原事件协议。结果见 [validation/mascot-restore/README.md](validation/mascot-restore/README.md)。
 
 ## 交给 Claude 的 UI 问题
 

@@ -75,6 +75,22 @@ async function touchPair(page,points,liftFirst=true){
   await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
   await cdp.detach();await delay(200);
 }
+async function walkTo(page,x,z){
+  const p=await snapshot(page),dx=x-p.position.x,dz=z-p.position.z;
+  const distance=Math.hypot(dx,dz);if(distance<.08)return;
+  await look(page,Math.atan2(dx,dz),0);await page.keyboard.down('KeyW');
+  try{await page.waitForFunction(({x,z})=>{const p=App.firstPerson.getSnapshot().position;return Math.hypot(p.x-x,p.z-z)<.09;},{x,z},{timeout:15000});}
+  finally{await page.keyboard.up('KeyW');}
+  await delay(150);
+}
+async function aimAtToy(page,who){
+  const point=await page.evaluate(w=>{
+    const toy=App.firstPerson.getCharacter(0).group.parent.getObjectByName('sofa-plush-'+w);
+    toy.updateWorldMatrix(true,false);return toy.localToWorld(new THREE.Vector3(.235,.55,0)).toArray();
+  },who);
+  const p=await snapshot(page),dx=point[0]-p.position.x,dz=point[2]-p.position.z;
+  await look(page,Math.atan2(dx,dz),Math.atan2(point[1]-1.36,Math.hypot(dx,dz)-.3));
+}
 async function run(){
   const executable=process.env.CHROME_BIN||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
   browser=await chromium.launch({...(fs.existsSync(executable)?{executablePath:executable}:{}),headless:true,
@@ -86,9 +102,22 @@ async function run(){
     await a.screenshot({path:path.join(ART,'browser-a-first-person.png')});
     await b.screenshot({path:path.join(ART,'browser-b-first-person.png')});
   });
+  await check('original_sofa_keepsakes_coexist_with_characters_in_both_views',async()=>{
+    const toys=()=>a.evaluate(()=>[0,1].map(w=>{
+      const p=App.firstPerson.getCharacter(0).group.parent.getObjectByName('sofa-plush-'+w),position=p.getWorldPosition(new THREE.Vector3());
+      return {visible:p.visible,kind:p.userData.meta.kind,who:p.userData.meta.i,position:position.toArray(),clickable:p.children.some(c=>c.isMesh&&c.userData.owner===p)};
+    }));
+    const before=await toys();
+    assert(before.every((p,w)=>p.visible&&p.clickable&&p.kind==='plush'&&p.who===w));
+    assert.deepEqual(before.map(p=>p.position),[[-4.3,.76,-.87],[-4.3,.76,.30000000000000004]]);
+    assert.equal(await a.evaluate(()=>App.firstPerson.getCharacter(0).group.visible),false);
+    await a.locator('[data-view="overview"]').click();assert.equal(await a.evaluate(()=>App.firstPerson.getCharacter(0).group.visible),true);
+    assert.deepEqual(await toys(),before);await a.screenshot({path:path.join(ART,'browser-restored-sofa-overview.png')});
+    await a.locator('[data-view="fp"]').click();assert.deepEqual(await toys(),before);
+  });
   await check('partner_arrow_and_two_account_presence',async()=>{
     await a.waitForFunction(()=>App.online(1)&&App.state.positions[1]&&App.firstPerson.getSnapshot().partner.motion!=='sit',null,{timeout:15000});
-    assert(await a.locator('.fp-partner').evaluate(el=>el.classList.contains('on')));
+    await a.waitForFunction(()=>document.querySelector('.fp-partner').classList.contains('on'),null,{timeout:5000});
     assert(parseFloat(await a.locator('.fp-partner').evaluate(el=>el.style.getPropertyValue('--rot')))>0);
   });
   await check('far_photo_cannot_be_interacted_with',async()=>{
@@ -139,9 +168,31 @@ async function run(){
   await check('offline_partner_returns_to_sofa_and_online_partner_interpolates_back',async()=>{
     await b.evaluate(()=>Sync.setPresence(false));
     await a.waitForFunction(()=>App.firstPerson.getSnapshot().partner.motion==='sit',null,{timeout:15000});
-    const seated=(await snapshot(a)).partner;assert.equal(seated.x,-4);assert.equal(seated.y,.36);
+    const seated=(await snapshot(a)).partner;assert.equal(seated.x,-3.75);assert.equal(seated.y,.36);assert.equal(seated.z,-.25);
+    assert(await a.evaluate(()=>[0,1].every(w=>App.firstPerson.getCharacter(0).group.parent.getObjectByName('sofa-plush-'+w).visible)));
     await b.evaluate(()=>Sync.setPresence(true));
     await a.waitForFunction(()=>App.firstPerson.getSnapshot().partner.motion!=='sit',null,{timeout:15000});
+  });
+  await check('restored_toys_keep_mood_poke_bounce_and_remote_notice',async()=>{
+    await b.evaluate(()=>Sync.setPresence(false));
+    try{
+      await a.waitForFunction(()=>App.firstPerson.getSnapshot().partner.motion==='sit',null,{timeout:15000});
+      await walkTo(a,(await snapshot(a)).position.x,-.87);await walkTo(a,-2.6,-.87);await aimAtToy(a,0);
+      await a.waitForFunction(()=>document.querySelector('.fp-target b').textContent.includes('我的心情'),null,{timeout:5000});
+      await a.locator('.fp-act').click();await a.waitForSelector('.moods');
+      await a.locator('[data-mood="hungry"]').click();await a.locator('.scrim .x').click();
+      await b.waitForFunction(()=>App.firstPerson.getCharacter(0).getMood()==='hungry',null,{timeout:15000});
+      await aimAtToy(a,0);await a.locator('.fp-act').click();await a.locator('[data-mood="happy"]').click();await a.locator('.scrim .x').click();
+      await walkTo(a,-2.6,1.15);await aimAtToy(a,1);
+      await a.waitForFunction(()=>document.querySelector('.fp-target b').textContent.includes('戳戳'),null,{timeout:5000});
+      await a.screenshot({path:path.join(ART,'browser-restored-sofa-first-person.png')});
+      await a.locator('.fp-act').click();
+      assert(await a.evaluate(()=>App.firstPerson.getCharacter(0).group.parent.getObjectByName('sofa-plush-1').userData.bounce>0));
+      await a.waitForSelector('.bubble.on');await b.waitForSelector('.fp-poke.on',{timeout:15000});
+      const line=await b.locator('.fp-poke div span').textContent();assert((await a.locator('.bubble').textContent()).endsWith(line));
+      await a.screenshot({path:path.join(ART,'browser-restored-toy-poke.png')});
+    }finally{await b.evaluate(()=>Sync.setPresence(true));}
+    await walkTo(a,-.05,1.15);
   });
   await check('near_photo_highlights_and_opens_original_panel',async()=>{
     await look(a,Math.PI,0);await a.keyboard.down('KeyW');
@@ -182,7 +233,11 @@ async function run(){
   let failure=null;
   try{await run();}catch(error){failure=redact(error.message);}
   const observations=[];
-  for(const page of pages){try{observations.push(await snapshot(page));await page.evaluate(()=>Sync.setPresence(false));}catch(_){} }
+  for(const page of pages){try{
+    observations.push(await snapshot(page));
+    if(failure&&await page.locator('.login').count()===0)await page.screenshot({path:path.join(ART,'browser-failure-'+pages.indexOf(page)+'.png')});
+    await page.evaluate(()=>Sync.setPresence(false));
+  }catch(_){} }
   if(browser)await browser.close();
   const result={passed:!failure,checks,failure,observations,environment:'Two headless Chromium/WebGL clients with real isolated PocketBase; not physical Android performance acceptance'};
   fs.writeFileSync(path.join(ART,'browser-e2e.json'),JSON.stringify(result,null,2)+'\n');

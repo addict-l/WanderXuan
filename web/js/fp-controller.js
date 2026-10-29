@@ -20,6 +20,7 @@ function create(options){
   let moving=false,transition=null,enterToken=0,disposed=false,focused=true;
   let blockedBefore=false,clearing=false,target=null,highlight=[],multiLook=false;
   let pointerEpoch=0;
+  let interactionSource=null;
   let remoteStamp='',remoteBlend=null,remoteReceivedAt=0;
   let nameKey='',frameCount=0,frameTotal=0,frameStart=performance.now(),fps=0;
   const moods=[null,null];
@@ -76,7 +77,7 @@ function create(options){
       }});
       const meta=target.userData.meta;
       ui.setTarget({label:typeof meta.label==='function'?meta.label():meta.label,
-        hint:target.userData.characterWho===1-self?'点一下戳戳 TA':'点一下打开'});
+        hint:meta.kind==='plush'&&meta.i===1-self?'点一下戳戳 TA':'点一下打开'});
     }else ui.setTarget(null);
   }
   function visible(object){for(let p=object;p;p=p.parent)if(!p.visible)return false;return true;}
@@ -90,8 +91,14 @@ function create(options){
   function interactAt(point){
     if(view!=='fp'||blocked())return;
     const hit=hitAt(point);if(!hit)return;
-    const owner=hit.object.userData.owner,meta=owner.userData.meta;
-    stop();clearInputs();setTarget(null);A.act(meta.kind,meta.i);
+    const owner=hit.object.userData.owner;
+    stop();clearInputs();setTarget(null);activate(owner);
+  }
+  function activate(owner){
+    if(!owner||!owner.userData.meta)return;
+    const previous=interactionSource;interactionSource=owner;
+    try{const meta=owner.userData.meta;return A.act(meta.kind,meta.i);}
+    finally{interactionSource=previous;}
   }
   function eyePosition(){
     chars[self].getEyeWorldPosition(eye);
@@ -119,7 +126,7 @@ function create(options){
     if(options.onViewChange)options.onViewChange(next);
   }
   function playPoke(w,line){
-    if(options.onPoke)options.onPoke(w,line||A.pokeLine(w));
+    if(options.onPoke)options.onPoke(w,line||A.pokeLine(w),interactionSource);
     else chars[w].play('jump');
   }
   function resize(width,height){
@@ -154,7 +161,9 @@ function create(options){
     const w=1-self,c=chars[w],p=state.positions&&state.positions[w];
     c.group.visible=true;
     if(!A.online(w)||!p||!Number.isFinite(p.x)||!Number.isFinite(p.z)||!Number.isFinite(p.ry)){
-      c.group.position.set(-4,.76-c.info.seatOffset,w===0?-.85:.35);c.group.rotation.y=Math.PI/2;
+      // Sit between the two original keepsakes, toward the cushion's front,
+      // rather than occupying either toy's original seat.
+      c.group.position.set(-3.75,.76-c.info.seatOffset,-.25);c.group.rotation.y=Math.PI/2;
       c.setMotion('sit');remoteStamp='';remoteBlend=null;return;
     }
     const stamp=[p.at,p.x,p.z,p.ry,p.motion].join(':');
@@ -276,7 +285,7 @@ function create(options){
   publish(true);
   if(window.Sync&&Sync.setPresence)Sync.setPresence(!document.hidden);
   if(preferred==='fp')beginEntry();else{orbit.enabled=true;setProjection();}
-  return {update,resize,setView,getView:()=>view,getSnapshot,getCharacter:w=>chars[w],
+  return {update,resize,setView,activate,getView:()=>view,getSnapshot,getCharacter:w=>chars[w],
     allowsOverviewInput:()=>view==='overview'&&!transition&&!blocked(),
     destroy(){disposed=true;enterToken++;stop();clearHighlight();disposers.forEach(fn=>fn());ui.destroy();chars.forEach(c=>{
       if(options.unregisterCharacter)options.unregisterCharacter(c.group);c.dispose();

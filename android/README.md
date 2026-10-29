@@ -6,7 +6,7 @@ Android Studio 打开本目录；使用 JDK 21、Android SDK Platform 36，最�
 
 macOS：`./scripts/build.sh`；其他系统设置 `JAVA_HOME` / Android SDK 后执行 `gradlew assembleRelease`（Windows 为 `gradlew.bat assembleRelease`）。构建会自动将相邻 `../web/` 同步到 APK assets。APK 输出：`app/build/outputs/apk/release/`。
 
-版本 1.1.1（versionCode 4）沿用原包名和签名，可覆盖安装旧包并保留登录。构建同步明确排除 `characters-preview.html` 和 `fp-ui-preview.html`；这两个预览页只保留在网页源码目录中。
+版本 1.1.2（versionCode 5）沿用原包名和签名，可覆盖安装旧包并保留登录。构建同步明确排除 `characters-preview.html` 和 `fp-ui-preview.html`；这两个预览页只保留在网页源码目录中。
 
 在工程根目录执行 `python3 tests/verify-apk.py android/app/build/outputs/apk/release/app-release.apk`，检查 APK 版本、签名、网页资源一致性及预览页排除。
 
