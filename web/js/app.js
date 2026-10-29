@@ -84,7 +84,7 @@ function blank(){
 let state=null;
 if(LIVE) state=blank();
 else{try{state=JSON.parse(localStorage.getItem(KEY));}catch(e){}if(!state||state.v!==2) state=sample();}
-state.timeMode='auto';
+state.timeMode=(()=>{try{const v=localStorage.getItem('room-time-mode');return ['auto','day','dusk','night'].includes(v)?v:'auto';}catch(e){return 'auto';}})();
 const me=()=>state.me,other=()=>1-state.me;
 
 const subs=[];
@@ -218,18 +218,31 @@ function mountHud(){
   tipEl=document.createElement('div');tipEl.className='tip';document.body.appendChild(tipEl);
   toastEl=document.createElement('div');toastEl.className='toast';toastEl.setAttribute('role','status');document.body.appendChild(toastEl);
   hudEl.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
-    if(b.dataset.t){state.timeMode=b.dataset.t;renderHud();emit('time');}
-    if(b.dataset.me!==undefined&&+b.dataset.me!==state.me){state.me=+b.dataset.me;heartbeat();renderHud();emit('who');toast(`现在是 ${state.names[state.me]} 的视角`);}});
+    if(b.classList.contains('hud-pill')){setHudOpen(!hudOpen);return;}
+    if(b.dataset.go){setHudOpen(false);act(b.dataset.go,0);return;}
+    if(b.dataset.me!==undefined&&+b.dataset.me!==state.me){state.me=+b.dataset.me;heartbeat();setHudOpen(true);emit('who');toast(`现在是 ${state.names[state.me]} 的视角`);}});
+  hudEl.addEventListener('pointerdown',()=>{if(hudOpen)setHudOpen(true);});
+  document.addEventListener('pointerdown',e=>{if(hudOpen&&!hudEl.contains(e.target))setHudOpen(false);},true);
+  try{hintVisits=+(localStorage.getItem('room-hint-visits')||0)+1;localStorage.setItem('room-hint-visits',String(hintVisits));}catch(e){hintVisits=1;}
   dockEl.addEventListener('click',e=>{const b=e.target.closest('button');if(b)act(b.dataset.go,0);});
-  renderHud();on(k=>{if(['calendar','letters','who','names','all'].includes(k))renderHud();});
+  renderHud();on(k=>{if(['calendar','letters','who','names','all','presence','time'].includes(k))renderHud();});
 }
+let hudOpen=false,hudT=null,hintVisits=1;
+function setHudOpen(o){hudOpen=!!o;clearTimeout(hudT);if(hudOpen)hudT=setTimeout(()=>setHudOpen(false),6000);renderHud();}
 function renderHud(){
-  const n=state.names,unread=state.letters.filter(l=>l.to===state.me&&!l.opened).length;
-  hudEl.innerHTML=`<div class="names"><span class="a">${esc(n[0])}</span><span class="heart" aria-hidden="true">♥</span><span class="b">${esc(n[1])}</span></div>
-    <div class="days">在一起第 <b>${daysTogether()}</b> 天</div>
-    <div class="hud-row"><span class="lbl">我是</span>${LIVE?`<strong class="me-name">${esc(n[state.me])}</strong>`:`<div class="seg" role="group" aria-label="切换视角">${[0,1].map(w=>`<button type="button" data-me="${w}" aria-pressed="${state.me===w}">${esc(n[w])}</button>`).join('')}</div>`}</div>
-    <div class="hud-row"><span class="lbl">时间</span><div class="seg" role="group" aria-label="房间时间">${[['auto','实时'],['day','白天'],['dusk','黄昏'],['night','夜晚']].map(([k,l])=>`<button type="button" data-t="${k}" aria-pressed="${state.timeMode===k}">${l}</button>`).join('')}</div></div>`;
-  dockEl.innerHTML=`<div class="hint"><span>拖动旋转 · 缩放 · 点房间里的东西</span></div><div class="chips">${DOCK.map(([k,l,c])=>`<button type="button" data-go="${k}"><span class="dot" style="background:${c}"></span>${l}${k==='letters'&&unread?`<span class="badge">${unread}</span>`:''}</button>`).join('')}</div>`;
+  const n=state.names,m=state.me,o=1-m,d=daysTogether(),nx=upcoming(1)[0],on=online(o),unread=state.letters.filter(l=>l.to===m&&!l.opened).length;
+  const av=w=>`<span class="av${w===m?' me':''}" style="--c:var(--p${w?'b':'a'})">${esc(String(n[w]).slice(-1))}${w!==m&&online(w)?'<i></i>':''}</span>`;
+  const seen=on?'在线':state.lastSeen[o]?rel(state.lastSeen[o])+'来过':'还没来过';
+  hudEl.innerHTML=`<button type="button" class="hud-pill" aria-expanded="${hudOpen}" aria-label="${esc(n[0])}和${esc(n[1])}，在一起第 ${d} 天，${esc(n[o])}${on?'在线':'不在线'}。点开看详情">
+      <span class="avs" aria-hidden="true">${av(0)}<span class="hheart">♥</span>${av(1)}</span><span class="dnum" aria-hidden="true"><b>${d}</b>天</span></button>
+    ${hudOpen?`<div class="hud-more" role="region" aria-label="我们俩">
+      <div class="hm-names"><span class="a">${esc(n[0])}</span><span class="h" aria-hidden="true">♥</span><span class="b">${esc(n[1])}</span></div>
+      <p class="hm-days">在一起第 <b>${d}</b> 天 · 从 ${fmt(parseD(state.start))}</p>
+      <ul>${nx?`<li><span>下一个纪念日</span><span>${nx.left===0?'就是今天':nx.left+' 天后'} · ${esc(nx.title)}</span></li>`:''}
+        <li><span>${esc(n[o])}</span><span class="st${on?' on':''}"><i></i>${seen}</span></li></ul>
+      <div class="hm-foot">${LIVE?`<span class="small" style="margin:0">我是 ${esc(n[m])}</span>`:`<div class="seg" role="group" aria-label="预览视角">${[0,1].map(w=>`<button type="button" data-me="${w}" aria-pressed="${m===w}">${esc(n[w])}</button>`).join('')}</div>`}<button type="button" class="link" data-go="cal">打开挂历</button></div>
+    </div>`:''}`;
+  dockEl.innerHTML=`<div class="hint${hintVisits>3?' gone':''}"><span>拖动旋转 · 缩放 · 点房间里的东西</span></div><div class="chips">${DOCK.map(([k,l,c])=>`<button type="button" data-go="${k}"><span class="dot" style="background:${c}"></span>${l}${k==='letters'&&unread?`<span class="badge">${unread}</span>`:''}</button>`).join('')}</div>`;
 }
 function tip(label,x,y){if(!tipEl)return;if(!label){tipEl.classList.remove('on');return;}tipEl.textContent=label;tipEl.style.left=x+'px';tipEl.style.top=y+'px';tipEl.classList.add('on');}
 function toast(msg){if(!toastEl)return;toastEl.textContent=msg;toastEl.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>toastEl.classList.remove('on'),2600);}
@@ -500,11 +513,13 @@ function openSettings(){
   openModal(`<h2>设置</h2><p class="sub">${LIVE?`已登录：${esc(n[m])}`:'现在是本地预览模式，数据只存在这台设备上（还没填 config.js）'}</p>
     <div class="set-list">
       <label class="field"><span>我的名字</span><input id="st-name" maxlength="6" value="${esc(n[m])}"></label>
+      <div class="set-row"><span>房间光线</span><div class="seg" role="group" aria-label="房间光线">${[['auto','跟着真实时间'],['day','白天'],['dusk','黄昏'],['night','夜晚']].map(([k,l])=>`<button type="button" data-t="${k}" aria-pressed="${state.timeMode===k}">${l}</button>`).join('')}</div></div>
       ${installEvt?'<button class="btn primary" id="st-install" type="button">安装到手机桌面</button>':'<p class="small">要装到桌面：在 Chrome 菜单里选"添加到主屏幕"或"安装应用"。</p>'}
       ${LIVE?`<form id="st-pw" class="row-form"><input id="st-pw0" type="password" maxlength="72" placeholder="旧密码" aria-label="旧密码" autocomplete="current-password"><input id="st-pw1" type="password" minlength="6" maxlength="72" placeholder="新密码（至少 6 位）" aria-label="新密码" autocomplete="new-password"><button class="btn ghost" type="submit">改密码</button></form>
       ${Sync.needsServer?`<p class="small">服务器：${esc(Sync.server())}</p>`:''}
       <button class="btn ghost" id="st-out" type="button">退出登录</button>`:''}
     </div>`,root=>{
+    root.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{state.timeMode=b.dataset.t;try{localStorage.setItem('room-time-mode',b.dataset.t);}catch(e){}emit('time');openSettings();});
     root.querySelector('#st-name').onchange=e=>{const v=e.target.value.trim().slice(0,6);if(!v)return;state.names[m]=v;save();emit('names');toast('名字改好了');};
     const ins=root.querySelector('#st-install');if(ins)ins.onclick=async()=>{const ev=installEvt;installEvt=null;closeModal();ev.prompt();try{await ev.userChoice;}catch(e){}};
     const pw=root.querySelector('#st-pw');if(pw)pw.addEventListener('submit',async e=>{e.preventDefault();const v=root.querySelector('#st-pw1').value;if(v.length<6){toast('密码至少 6 位');return;}
