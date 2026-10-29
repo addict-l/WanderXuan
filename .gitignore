@@ -1,6 +1,8 @@
 .DS_Store
 .idea/
 .gradle/
+node_modules/
+test-results/
 **/build/
 **/local.properties
 **/artifacts/

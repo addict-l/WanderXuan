@@ -1,0 +1,33 @@
+小人视角隔离验收环境（2026-10-29）
+
+API 基址：
+https://api.xn--zbs33ddmy9oeqa.club/couple-room/validation/first-person
+
+服务：couple-room-fp-candidate.service
+监听：127.0.0.1:18020，通过现有 HTTPS 主机的专用 API 路由访问。
+独立目录：/opt/couple-room-validation/first-person-20261029
+独立数据：该目录下的 pb_data/，权限 700，不复制或访问生产数据。
+二进制：只读复制服务器已有 PocketBase 0.40.5；迁移来自 server/pb_migrations/。
+管理台未公开；候选 API 允许本地浏览器和 Android appassets 源，业务访问仍需登录。
+
+测试凭据仅在构建机受保护目录：
+~/.local/share/couple-room/fp-candidate-credentials.json
+权限 600，结构为 server 与 accounts；账号具有 name/email/who/password。
+这份凭据不能提交到仓库、APK、测试报告或 PR。
+
+prepare-fp-candidate.py 是服务器端首次准备脚本，必须以 root 运行，
+从 stdin 接收包含 accounts 与 migration_files 的 JSON；不将密码打印或写到服务器。
+开启公网路由前，脚本会先替换迁移中的默认密码并验证两个新密码。
+已存在目录、服务、路由或端口时会拒绝覆盖，后续验证直接复用该隔离实例。
+
+只读核查：
+  systemctl status couple-room-fp-candidate
+  journalctl -u couple-room-fp-candidate
+  curl https://api.xn--zbs33ddmy9oeqa.club/couple-room/validation/first-person/api/health
+
+Nginx 修改前的完整站点配置保存在候选目录 backups/shinian-api-idn.before。
+回退仅删除本次候选 snippet 引用，通过 nginx -t 后 reload，并停用候选服务；
+保留候选 pb_data，原生产 API、证书、端口和数据不作修改。
+
+部署及公网验证元数据写入本地忽略目录：
+android/artifacts/first-person/candidate-backend.json

@@ -1,0 +1,237 @@
+{
+  "recordedAt": "2026-10-29T04:27:09.527782+00:00",
+  "device": "emulator-5554",
+  "platform": "Android 16 / API 36 emulator",
+  "package": "cn.coupleroom.app.preview",
+  "versionUnderNativeQA": "1.1.1/code4",
+  "apkSha256UnderNativeQA": "1f6ce08c0147f325a5f1084379a07150d400423b05519607c45d3ff939978594",
+  "productionApp": "not installed, launched, cleared or changed by this QA",
+  "sourceEditsByQA": [],
+  "keyboardSettings": "No keyboard, IME, hardware-keyboard, language, or key-capture settings changed. Existing IME toolbar menu Show on-screen keyboard used only to transiently show keyboard, then Back/Home dismissed it. Settings entry never opened.",
+  "rotation": {
+    "initial": "free; accelerometer_rotation=1; user_rotation=0",
+    "duringQA": "cmd window user-rotation lock 1/3/0",
+    "current": "free; accelerometer_rotation=1; user_rotation=0",
+    "restoredMatchesInitial": true
+  },
+  "baseline": {
+    "screenshot": "landscape-before.png",
+    "screenPx": [
+      2424,
+      1080
+    ],
+    "nativeWebViewFramePx": [
+      142,
+      137,
+      2424,
+      1017
+    ],
+    "statusBarVisible": true,
+    "navigationBarVisible": true,
+    "cutoutInsetPx": {
+      "left": 142
+    }
+  },
+  "checks": [
+    {
+      "id": "landscape-90",
+      "status": "passed",
+      "screenshot": "landscape-final-90.png",
+      "nativeWebViewFramePx": [
+        0,
+        0,
+        2424,
+        1080
+      ],
+      "statusBarVisible": false,
+      "navigationBarVisible": false,
+      "cutoutInsetPx": {
+        "left": 142
+      },
+      "observed": "Room artwork fills edge-to-edge; left controls avoid the left cutout.",
+      "finalSourceRetested": true
+    },
+    {
+      "id": "landscape-270",
+      "status": "passed",
+      "screenshot": "landscape-final-270.png",
+      "nativeWebViewFramePx": [
+        0,
+        0,
+        2424,
+        1080
+      ],
+      "statusBarVisible": false,
+      "navigationBarVisible": false,
+      "cutoutInsetPx": {
+        "right": 142
+      },
+      "observed": "Room artwork fills edge-to-edge; right controls move inward away from right cutout.",
+      "finalSourceRetested": true
+    },
+    {
+      "id": "portrait-return",
+      "status": "passed",
+      "screenshot": "portrait-final-restored.png",
+      "nativeWebViewFramePx": [
+        0,
+        0,
+        1080,
+        2424
+      ],
+      "statusBarVisible": false,
+      "navigationBarVisible": false,
+      "cutoutInsetPx": {
+        "top": 142
+      },
+      "observed": "Portrait room fills screen; header controls below top cutout.",
+      "finalSourceRetested": true
+    },
+    {
+      "id": "original-panel",
+      "status": "passed",
+      "screenshots": [
+        "portrait-todo-panel.png",
+        "landscape-final-ime-dismissed.png"
+      ],
+      "observed": "Existing Today Todo panel opened through real menu tap; input text layout-check entered but never submitted. Panel remained usable in landscape.",
+      "finalSourceRetested": true
+    },
+    {
+      "id": "portrait-floating-ime",
+      "status": "passed",
+      "screenshots": [
+        "portrait-ime-keyboard.png",
+        "portrait-final-ime-open.png"
+      ],
+      "nativeWebViewFramePx": [
+        0,
+        0,
+        1080,
+        2424
+      ],
+      "imeVisible": true,
+      "imeHeightPx": 0,
+      "observed": "Existing floating hardware-keyboard toolbar and floating on-screen keyboard keep native content full height.",
+      "finalSourceRetested": true
+    },
+    {
+      "id": "landscape-ime-resize-once",
+      "status": "passed",
+      "screenshot": "landscape-final-ime-rotated.png",
+      "nativeWebViewFramePx": [
+        0,
+        0,
+        2424,
+        849
+      ],
+      "imeFramePx": [
+        142,
+        849,
+        2424,
+        1080
+      ],
+      "imeHeightPx": 231,
+      "observed": "After rotation/reopening focused input, native content height is 1080-231=849 once; existing panel and typed field fully visible.",
+      "finalSourceRetested": true
+    },
+    {
+      "id": "ime-dismiss-fullscreen",
+      "status": "passed",
+      "screenshot": "landscape-final-ime-dismissed.png",
+      "nativeWebViewFramePx": [
+        0,
+        0,
+        2424,
+        1080
+      ],
+      "statusBarVisible": false,
+      "navigationBarVisible": false,
+      "imeVisible": false,
+      "observed": "Android Back dismisses IME; native content returns full height and navigation bar hides without residual blank border.",
+      "finalSourceRetested": true
+    },
+    {
+      "id": "focused-ime-rotate-stable-canvas",
+      "status": "passed",
+      "screenshot": "landscape-final-ime-rotated.png",
+      "nativeWebViewFramePx": [
+        0,
+        0,
+        2424,
+        849
+      ],
+      "observed": "With existing floating IME focused in portrait, rotated to landscape and waited 6 seconds. Actual WebView room canvas covers the entire native content width and height, without stale portrait canvas/right blank area. Existing panel and input remain visible.",
+      "finalSourceRetested": true
+    },
+    {
+      "id": "background-resume-immersive",
+      "status": "passed",
+      "screenshot": "landscape-final-background-resume.png",
+      "nativeWebViewFramePx": [
+        0,
+        0,
+        2424,
+        1080
+      ],
+      "statusBarVisible": false,
+      "navigationBarVisible": false,
+      "imeVisible": false,
+      "observed": "Home then resumed same preview Activity. Native WebView restored full screen and system bars remained hidden.",
+      "finalSourceRetested": true
+    }
+  ],
+  "state": "complete; final source preview Home then force-stopped, confirmed no pid; rotation restored exactly to original free/1/0",
+  "pending": [],
+  "limits": [
+    "No physical Android phone tested; emulator Android16/API36 only",
+    "Existing floating keyboard configuration retained; no keyboard/IME/hardware/language/capture settings changed",
+    "IME resize branch exercised by native231px landscape toolbar; docked full keyboard on real phone remains unverified",
+    "No app-source debug or JS synthetic layout used; verdict based on real screenshots and native dumps",
+    "Final IME rotation verdict covers stable frame at6 seconds; continuous animation frames not quantitatively audited"
+  ],
+  "initialCandidateNativeQaSha256": "c2484d66a740bd287c74c9445cbb9317040170e4cdf06c1f3fd697a0b6ca2d01",
+  "finalApk": "android/releases/CoupleRoom-1.1.1-preview.apk",
+  "protectedSourceFiles": {
+    "web/js/characters.js": {
+      "sha256": "98eb63eb914d9c4c4d05ed6499cdec395e245e66b27681384ac0f3399c5d541f",
+      "byteEqualsOriginUiCharacters": true
+    },
+    "web/js/fp-ui.js": {
+      "sha256": "5dc342ec36fbf317374c50ca56cc837e1ebb2e445224283dc73d687db650af5c",
+      "byteEqualsOriginUiCharacters": true
+    },
+    "web/css/fp-ui.css": {
+      "sha256": "dd87d91995cb5278040bb6cf560143cfaa9ac3354625b32bea3755017df9732b",
+      "byteEqualsOriginUiCharacters": true
+    }
+  },
+  "productionPackageMetadata": {
+    "before": {
+      "versionCode": "2 minSdk=26 targetSdk=36",
+      "versionName": "1.0.1",
+      "firstInstallTime": "2026-10-29 01:38:27",
+      "lastUpdateTime": "2026-10-29 02:07:56"
+    },
+    "after": {
+      "versionCode": "2 minSdk=26 targetSdk=36",
+      "versionName": "1.0.1",
+      "firstInstallTime": "2026-10-29 01:38:27",
+      "lastUpdateTime": "2026-10-29 02:07:56"
+    },
+    "unchanged": true
+  },
+  "initialCandidateObservation": {
+    "screenshot": "landscape-ime-open.png",
+    "observed": "Initial candidate captured 2 seconds after portrait/floating-IME rotation retained old portrait canvas and right blank area. Dismissing IME restored it.",
+    "finalRetest": "Final frozen source with stage ResizeObserver was installed; same rotation waited 6 seconds and actual canvas fills native2424x849 content, see landscape-final-ime-rotated.png."
+  },
+  "summary": {
+    "checksPassed": 9,
+    "checksTotal": 9,
+    "physicalDeviceTested": false,
+    "sourceModifiedByQA": false,
+    "finalPreviewStopped": true,
+    "originalRotationRestored": true
+  }
+}

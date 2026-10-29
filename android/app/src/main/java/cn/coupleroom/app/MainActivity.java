@@ -4,12 +4,13 @@ import android.app.Activity;
 import android.annotation.SuppressLint;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
-import android.view.WindowInsets;
+import android.view.WindowManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -21,6 +22,11 @@ import android.widget.FrameLayout;
 import android.widget.Toast;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.webkit.WebViewAssetLoader;
 
 public final class MainActivity extends Activity {
@@ -30,25 +36,38 @@ public final class MainActivity extends Activity {
     private WebView webView;
     private ValueCallback<Uri[]> pendingFiles;
     private OnBackInvokedCallback backCallback;
+    private FrameLayout root;
+    private boolean pageReady;
+    private Insets safeArea = Insets.NONE;
+    private String publishedSafeArea;
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
-        FrameLayout root = new FrameLayout(this);
+        root = new FrameLayout(this);
         root.setBackgroundColor(Color.rgb(247, 240, 228));
         webView = new WebView(this);
         root.addView(webView, new FrameLayout.LayoutParams(-1, -1));
         setContentView(root);
-        if (Build.VERSION.SDK_INT >= 30) {
-            getWindow().setDecorFitsSystemWindows(false);
-            root.setOnApplyWindowInsetsListener((v, insets) -> {
-                android.graphics.Insets edges = insets.getInsets(WindowInsets.Type.systemBars()
-                    | WindowInsets.Type.displayCutout() | WindowInsets.Type.ime());
-                v.setPadding(edges.left, edges.top, edges.right, edges.bottom);
-                return insets;
-            });
-            root.requestApplyInsets();
-        }
+        configureFullscreen();
+        ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
+            Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
+            // Only the keyboard resizes the WebView. The room paints beneath
+            // bars/cutouts; CSS keeps controls out of those areas instead.
+            v.setPadding(0, 0, 0, ime.bottom);
+            safeArea = Insets.max(insets.getInsets(WindowInsetsCompat.Type.systemBars()
+                    | WindowInsetsCompat.Type.displayCutout()),
+                insets.getInsets(WindowInsetsCompat.Type.mandatorySystemGestures()));
+            if (ime.bottom > 0) safeArea = Insets.of(safeArea.left, safeArea.top, safeArea.right, 0);
+            publishSafeArea();
+            // Notify WebView of IME removal too; consuming all insets can leave
+            // ghost padding, while passing IME through would resize it twice.
+            return new WindowInsetsCompat.Builder(insets)
+                .setInsets(WindowInsetsCompat.Type.ime(), Insets.NONE)
+                .setVisible(WindowInsetsCompat.Type.ime(), false).build();
+        });
+        ViewCompat.requestApplyInsets(root);
         webView.setBackgroundColor(Color.rgb(247, 240, 228));
+        webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
@@ -61,6 +80,14 @@ public final class MainActivity extends Activity {
             .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
             .build();
         webView.setWebViewClient(new WebViewClient() {
+            @Override public void onPageStarted(WebView view, String url, android.graphics.Bitmap icon) {
+                pageReady = false;
+                publishedSafeArea = null;
+            }
+            @Override public void onPageFinished(WebView view, String url) {
+                pageReady = ASSET_HOST.equals(Uri.parse(url).getHost());
+                publishSafeArea();
+            }
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 return loader.shouldInterceptRequest(request.getUrl());
             }
@@ -94,6 +121,56 @@ public final class MainActivity extends Activity {
                 OnBackInvokedDispatcher.PRIORITY_DEFAULT, backCallback);
         }
         webView.loadUrl(HOME);
+    }
+
+    @SuppressWarnings("deprecation")
+    private void configureFullscreen() {
+        WindowManager.LayoutParams attributes = getWindow().getAttributes();
+        if (Build.VERSION.SDK_INT >= 30) {
+            attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+        } else if (Build.VERSION.SDK_INT >= 28) {
+            attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+        }
+        getWindow().setAttributes(attributes);
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
+        getWindow().setNavigationBarColor(Color.TRANSPARENT);
+        if (Build.VERSION.SDK_INT >= 29) {
+            getWindow().setStatusBarContrastEnforced(false);
+            getWindow().setNavigationBarContrastEnforced(false);
+        }
+        WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        controller.hide(WindowInsetsCompat.Type.systemBars());
+    }
+
+    private void publishSafeArea() {
+        if (!pageReady || webView == null) return;
+        float density = getResources().getDisplayMetrics().density;
+        int[] pixels = {safeArea.top, safeArea.right, safeArea.bottom, safeArea.left};
+        String[] edges = {"top", "right", "bottom", "left"};
+        StringBuilder script = new StringBuilder("(function(){var s=document.documentElement.style;");
+        for (int i = 0; i < edges.length; i++) {
+            script.append("s.setProperty('--android-safe-").append(edges[i]).append("','")
+                .append((int) Math.ceil(pixels[i] / density)).append("px');");
+        }
+        script.append("})()");
+        String update = script.toString();
+        if (!update.equals(publishedSafeArea)) {
+            publishedSafeArea = update;
+            webView.evaluateJavascript(update, null);
+        }
+    }
+
+    @Override public void onConfigurationChanged(Configuration configuration) {
+        super.onConfigurationChanged(configuration);
+        configureFullscreen();
+        ViewCompat.requestApplyInsets(root);
+    }
+
+    @Override public void onWindowFocusChanged(boolean focused) {
+        super.onWindowFocusChanged(focused);
+        if (focused) configureFullscreen();
     }
 
     private boolean handleNavigation(Uri uri) {
@@ -131,6 +208,8 @@ public final class MainActivity extends Activity {
     @Override protected void onResume() {
         super.onResume();
         if (webView != null) webView.onResume();
+        configureFullscreen();
+        if (root != null) ViewCompat.requestApplyInsets(root);
     }
 
     @Override protected void onPause() {

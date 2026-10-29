@@ -1,0 +1,76 @@
+{
+  "passed": true,
+  "baseline": false,
+  "checks": [
+    {
+      "check": "portrait_canvas_and_center_aim_fill_viewport",
+      "passed": true
+    },
+    {
+      "check": "portrait_controls_and_labels_avoid_cutout_and_gesture_edges",
+      "passed": true
+    },
+    {
+      "check": "portrait_original_panel_fits_and_keeps_close_button_reachable",
+      "passed": true
+    },
+    {
+      "check": "landscape-left-cutout_canvas_and_center_aim_fill_viewport",
+      "passed": true
+    },
+    {
+      "check": "landscape-left-cutout_controls_and_labels_avoid_cutout_and_gesture_edges",
+      "passed": true
+    },
+    {
+      "check": "landscape-left-cutout_original_panel_fits_and_keeps_close_button_reachable",
+      "passed": true
+    },
+    {
+      "check": "landscape-right-cutout_canvas_and_center_aim_fill_viewport",
+      "passed": true
+    },
+    {
+      "check": "landscape-right-cutout_controls_and_labels_avoid_cutout_and_gesture_edges",
+      "passed": true
+    },
+    {
+      "check": "landscape-right-cutout_original_panel_fits_and_keeps_close_button_reachable",
+      "passed": true
+    },
+    {
+      "check": "compact-landscape_canvas_and_center_aim_fill_viewport",
+      "passed": true
+    },
+    {
+      "check": "compact-landscape_controls_and_labels_avoid_cutout_and_gesture_edges",
+      "passed": true
+    },
+    {
+      "check": "compact-landscape_original_panel_fits_and_keeps_close_button_reachable",
+      "passed": true
+    },
+    {
+      "check": "return-portrait_canvas_and_center_aim_fill_viewport",
+      "passed": true
+    },
+    {
+      "check": "return-portrait_controls_and_labels_avoid_cutout_and_gesture_edges",
+      "passed": true
+    },
+    {
+      "check": "return-portrait_original_panel_fits_and_keeps_close_button_reachable",
+      "passed": true
+    },
+    {
+      "check": "rotation_keeps_wanru_identity_position_and_view",
+      "passed": true
+    },
+    {
+      "check": "no_runtime_errors",
+      "passed": true
+    }
+  ],
+  "failure": null,
+  "environment": "Real Chrome/WebGL + isolated PocketBase, Wanru account; injected numeric safe-area values model the Android host, not a physical phone"
+}

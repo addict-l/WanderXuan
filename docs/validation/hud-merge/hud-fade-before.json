@@ -1,0 +1,17 @@
+{
+  "passed": false,
+  "baseline": false,
+  "checks": [
+    {
+      "check": "hud_capsule_and_detail_use_upstream_design",
+      "passed": true
+    },
+    {
+      "check": "walking_to_overview_clears_capsule_fade_and_keeps_details_usable",
+      "passed": false
+    }
+  ],
+  "observations": [],
+  "failure": "page.waitForFunction: Timeout 1500ms exceeded.",
+  "environment": "Real Chrome/WebGL + isolated PocketBase, Wanru account; injected numeric safe-area values model the Android host, not a physical phone"
+}

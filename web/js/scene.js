@@ -15,6 +15,7 @@ const scene=new THREE.Scene();
 const camera=new THREE.PerspectiveCamera(36,1,.1,120);camera.position.set(13,9.5,13);
 const controls=new THREE.OrbitControls(camera,renderer.domElement);
 controls.target.set(-.6,1.8,-1);Object.assign(controls,{enableDamping:true,dampingFactor:.08,enablePan:false,minDistance:6,maxDistance:26,minPolarAngle:.35,maxPolarAngle:1.42,minAzimuthAngle:.06,maxAzimuthAngle:Math.PI/2-.06,rotateSpeed:.6});
+let firstPerson=null;
 
 /* ---------- helpers ---------- */
 const M=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.85,metalness:0},o));
@@ -317,6 +318,7 @@ const pillow=box(.18,.42,.55,M('#F3C6CF'),-.18,1.02,-1.0,sofa);pillow.rotation.x
 const throwB=box(.6,.04,.7,M('#F4A259'),.1,.79,.95,sofa);throwB.rotation.z=-.05;
 function plush(color,isBunny,z,w){
   const p=new THREE.Group();p.position.set(-.05,.76,z);sofa.add(p);const m=M(color,{roughness:1});
+  p.name='sofa-plush-'+w;p.userData.sofaPlushWho=w;
   sph(.24,m,0,.2,0,p).scale.set(1,.9,1);sph(.21,m,0,.56,0,p);
   if(isBunny){[-.07,.07].forEach(dz=>{const e=sph(.06,m,0,.82,dz,p);e.scale.set(.8,2.6,.8);});}else{[-.15,.15].forEach(dz=>sph(.075,m,0,.72,dz,p));}
   sph(.08,M('#FFF3EA',{roughness:1}),.18,.18,0,p).scale.set(.6,1,1);
@@ -408,24 +410,34 @@ const label=m=>typeof m.label==='function'?m.label():m.label;
 function pick(e){const r=renderer.domElement.getBoundingClientRect();ptr.x=(e.clientX-r.left)/r.width*2-1;ptr.y=-(e.clientY-r.top)/r.height*2+1;
   ray.setFromCamera(ptr,camera);const hit=ray.intersectObjects(hot,false).find(h=>h.object.userData.owner&&h.object.visible);return hit?hit.object.userData.owner:null;}
 const cv=renderer.domElement;
-cv.addEventListener('pointermove',e=>{if(downAt&&e.buttons){A.tip(null);return;}const o=e.pointerType==='mouse'?pick(e):null;hover=o;cv.style.cursor=o?'pointer':'grab';o?A.tip(label(o.userData.meta),e.clientX,e.clientY):A.tip(null);});
+cv.addEventListener('pointermove',e=>{if(firstPerson&&!firstPerson.allowsOverviewInput()){hover=null;downAt=null;A.tip(null);return;}if(downAt&&e.buttons){A.tip(null);return;}const o=e.pointerType==='mouse'?pick(e):null;hover=o;cv.style.cursor=o?'pointer':'grab';o?A.tip(label(o.userData.meta),e.clientX,e.clientY):A.tip(null);});
 cv.addEventListener('pointerleave',()=>{hover=null;A.tip(null);});
-cv.addEventListener('pointerdown',e=>{downAt=[e.clientX,e.clientY];});
-cv.addEventListener('pointerup',e=>{if(!downAt)return;const mv=Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1]);downAt=null;if(mv>6)return;const o=pick(e);if(!o)return;const m=o.userData.meta;A.act(m.kind,m.i);});
+cv.addEventListener('pointerdown',e=>{if(firstPerson&&!firstPerson.allowsOverviewInput())return;downAt=[e.clientX,e.clientY];});
+cv.addEventListener('pointerup',e=>{if(firstPerson&&!firstPerson.allowsOverviewInput()){downAt=null;return;}if(!downAt)return;const mv=Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1]);downAt=null;if(mv>6)return;const o=pick(e);if(!o)return;if(firstPerson)firstPerson.activate(o);else{const m=o.userData.meta;A.act(m.kind,m.i);}});
 
 /* speech bubble over a plush */
 const bubble=document.createElement('div');bubble.className='bubble';bubble.setAttribute('aria-live','polite');document.body.appendChild(bubble);let bubbleFor=null,bubbleT=0;
-function poke(w){const pl=plushes[w];pl.p.userData.bounce=1;bubble.textContent=`${S.names[w]}：${A.pokeLine(w)}`;bubbleFor=pl;bubbleT=2.4;bubble.classList.add('on');}
+function poke(w,line,source){
+  const c=firstPerson&&firstPerson.getCharacter(w),pl=plushes[w];
+  const toy=source&&source.userData.sofaPlushWho===w;
+  if(c)c.play('jump');
+  if(toy||!c){pl.p.userData.bounce=1;bubbleFor=pl;}
+  else{if(w===S.me&&firstPerson.getView()==='fp')return;bubbleFor={p:c.group,height:c.info.height+.25};}
+  bubble.textContent=`${S.names[w]}：${line||A.pokeLine(w)}`;bubbleT=2.4;bubble.classList.add('on');
+}
 const tmpV=new THREE.Vector3();
 
 /* ---------- sizing + loop ---------- */
 function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);cv.style.width=w+'px';cv.style.height=h+'px';
-  camera.aspect=w/h;camera.fov=w/h<.8?60:36;controls.maxDistance=w/h<.8?30:26;camera.updateProjectionMatrix();}
+  if(firstPerson)firstPerson.resize(w,h);else{camera.aspect=w/h;camera.fov=w/h<.8?60:36;controls.maxDistance=w/h<.8?30:26;camera.updateProjectionMatrix();}}
 window.addEventListener('resize',resize);resize();
+// Native rotation/IME relayout can settle after the window resize event.
+// Size from the actual stage so no old portrait-width canvas remains visible.
+if(window.ResizeObserver)new ResizeObserver(resize).observe(stage);
 if(stage.clientWidth/stage.clientHeight<.8)camera.position.set(15.5,12,15.5);
 const clock=new THREE.Clock();let skyAcc=0;
 function loop(){
-  const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;controls.update();
+  const frame=clock.getDelta(),dt=Math.min(frame,.05),t=clock.elapsedTime;if(firstPerson)firstPerson.update(Math.min(frame,.1));else controls.update();
   for(let k=anims.length-1;k>=0;k--){const a=anims[k];a.t+=dt;const p=Math.min(1,a.t/a.dur);a.f(p);if(p>=1){anims.splice(k,1);a.done&&a.done();}}
   owners.forEach(o=>{const u=o.userData;
     if(u.mode==='pull'){const tz=u.basePos.z+(o===hover?.07:0)+(bookMeshes[pulled]===o?.3:0);o.position.z+=(tz-o.position.z)*Math.min(1,dt*10);}
@@ -434,7 +446,7 @@ function loop(){
   plushes.forEach(pl=>{const u=pl.p.userData;if(u.bounce>0){u.bounce=Math.max(0,u.bounce-dt*1.5);pl.p.position.y=.76+Math.abs(Math.sin(u.bounce*Math.PI*3))*.28*u.bounce;}});
   if(plantG.userData.bounce>0){plantG.userData.bounce=Math.max(0,plantG.userData.bounce-dt*1.2);const b=plantG.userData.bounce;leaves.scale.set(1+Math.sin(b*12)*.06*b,1-Math.sin(b*12)*.06*b,1+Math.sin(b*12)*.06*b);}
   for(let k=drops.length-1;k>=0;k--){const d=drops[k];d.v+=dt*9;d.m.position.y-=d.v*dt;if(d.m.position.y<1.0){scene.remove(d.m);drops.splice(k,1);}}
-  if(bubbleFor){bubbleT-=dt;bubbleFor.p.getWorldPosition(tmpV);tmpV.y+=1.05;tmpV.project(camera);const r=cv.getBoundingClientRect();
+  if(bubbleFor){bubbleT-=dt;bubbleFor.p.getWorldPosition(tmpV);tmpV.y+=bubbleFor.height||1.05;tmpV.project(camera);const r=cv.getBoundingClientRect();
     bubble.style.left=(r.left+(tmpV.x+1)/2*r.width)+'px';bubble.style.top=(r.top+(1-tmpV.y)/2*r.height)+'px';if(bubbleT<=0){bubble.classList.remove('on');bubbleFor=null;}}
   const playing=!!S.playing;
   if(playing&&!reduce)vinyl.rotation.y-=dt*3.4;
@@ -450,7 +462,14 @@ function loop(){
 
 /* ---------- boot ---------- */
 function drawAllPhotos(){slots.forEach(drawSlot);}
-drawAllPhotos();buildBooks();drawBoard();buildNotes();buildBin();drawFridge();drawCal();wins.forEach(w=>{drawSky(w,0);drawPlaque(w);});plushes.forEach(drawPlush);buildEnvelopes();buildPlant();applyLight();loop();
+drawAllPhotos();buildBooks();drawBoard();buildNotes();buildBin();drawFridge();drawCal();wins.forEach(w=>{drawSky(w,0);drawPlaque(w);});plushes.forEach(drawPlush);buildEnvelopes();buildPlant();applyLight();
+// The original sofa keepsakes coexist with the walkable characters.
+shelf.userData.meta={kind:'books',i:0,label:()=>`书架 · ${S.books.length?S.books.length+' 本回忆':'放一本回忆'}`};adopt(shelf,shelf);
+controls.update();
+firstPerson=FirstPersonController.create({THREE,world:FPWorld,App:A,scene,camera,renderer,orbit:controls,FPUI,CoupleChars,hot,
+  registerCharacter(group,w){group.userData.meta={kind:'plush',i:w,label:()=>`${S.names[w]} · ${(A.MOODS.find(m=>m[0]===S.moods[w])||['',''])[1]}`};adopt(group,group);},
+  unregisterCharacter:dropMeshes,onPoke:poke,onViewChange(){hover=null;downAt=null;A.tip(null);}});
+A.firstPerson=firstPerson;resize();loop();
 const ev=A.eventsOn(A.T());if(ev.length)setTimeout(()=>A.toast(`今天：${ev[0].title}`),1200);
 A.on((k,x)=>{
   switch(k){
@@ -466,7 +485,7 @@ A.on((k,x)=>{
     case 'music':break;
     case 'plant':buildPlant();if(x==='water')water();break;
     case 'mood':plushes.forEach(drawPlush);break;
-    case 'poke':poke(x);break;
+    case 'poke':break; // FirstPersonController animates the character and speech bubble.
     case 'cities':wins.forEach(w=>{drawSky(w,clock.elapsedTime);drawPlaque(w);});applyLight();break;
     case 'time':applyLight();drawCal();drawBoard();wins.forEach(w=>{drawSky(w,clock.elapsedTime);drawPlaque(w);});break;
     case 'who':drawAllPhotos();buildEnvelopes();buildPlant();applyLight();wins.forEach(drawPlaque);break;

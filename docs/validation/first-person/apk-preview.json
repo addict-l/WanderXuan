@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "package": "cn.coupleroom.app.preview",
+  "version_code": 3,
+  "version": "1.1.0",
+  "apk_bytes": 5761464,
+  "apk_sha256": "ccf9864d4c902a25adb35e7346c0ffb89f2e73634057afe630c5893511ec4534",
+  "certificate_sha256": "92bf2d453e30f4cc5bacd311754df1e9501810bcca95933321c4bf1dc4bce2d3",
+  "web_assets_match_source": 19,
+  "preview_pages_excluded": [
+    "characters-preview.html",
+    "fp-ui-preview.html"
+  ],
+  "protected_ui_source_unchanged": [
+    "js/characters.js",
+    "js/fp-ui.js",
+    "css/fp-ui.css"
+  ],
+  "isolated_test_package": true,
+  "test_server": "https://api.xn--zbs33ddmy9oeqa.club/couple-room/validation/first-person"
+}
