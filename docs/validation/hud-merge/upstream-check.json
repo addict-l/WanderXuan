@@ -1,0 +1,11 @@
+{
+  "upstream": "4619e32cc3f4254b721525920df54ae8a8486513",
+  "passed": true,
+  "checks": {
+    "renderHud": true,
+    "openSettings": true,
+    "android_app_mirrors_web": true,
+    "fp_state_initializers_preserved": true,
+    "ui_sources_exact": true
+  }
+}

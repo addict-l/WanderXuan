@@ -54,6 +54,7 @@ function create(options){
     // FPUI exposes no reset method. Its existing blur handler clears WASD;
     // pointercancel above uses its existing joystick/look cancellation paths.
     window.dispatchEvent(new Event('blur'));
+    ui.getMove(); // Refresh FPUI's walking fade after clearing held input.
     clearing=false;
   }
   function publish(stopped){

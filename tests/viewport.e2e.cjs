@@ -7,7 +7,7 @@ const root=path.resolve(__dirname,'..'),output=path.join(root,'android/artifacts
 const credentials=JSON.parse(fs.readFileSync(process.env.FP_TEST_CREDENTIALS||path.join(os.homedir(),'.local/share/couple-room/fp-candidate-credentials.json'),'utf8'));
 const server=credentials.server,baseline=process.argv.includes('--baseline');
 assert(new URL(server).pathname.includes('/validation/'),'Use an isolated validation server');
-const checks=[],errors=[];let browser,page;
+const checks=[],errors=[],observations=[];let browser,page;
 const redact=s=>credentials.accounts.reduce((s,a)=>s.split(a.password).join('<redacted>'),String(s));
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 fs.mkdirSync(output,{recursive:true});
@@ -33,6 +33,29 @@ async function run(){
   await page.goto('https://appassets.androidplatform.net/assets/www/index.html');
   await page.locator('[data-w="1"]').click();await page.locator('#lg-pw').fill(credentials.accounts[1].password);await page.locator('#lg-go').click();
   await page.waitForFunction(()=>window.App&&App.firstPerson&&!App.firstPerson.getSnapshot().blocked,null,{timeout:45000});
+  await check('hud_capsule_and_detail_use_upstream_design',async()=>{
+    const pill=await page.locator('.hud-pill').boundingBox();assert.equal(pill.height,44);
+    assert(await page.locator('.hud').evaluate(el=>getComputedStyle(el).paddingTop==='0px'&&getComputedStyle(el).backgroundColor==='rgba(0, 0, 0, 0)'));
+    await page.locator('.hud-pill').click();await page.waitForSelector('.hud-more');
+    await page.locator('.hud-more [data-go="cal"]').click();await page.waitForSelector('.scrim');
+    assert.equal(await page.locator('.hud-more').count(),0);await page.locator('.scrim .x').click();
+    await page.locator('.hud-pill').click();await page.waitForSelector('.hud-more');
+    await page.touchscreen.tap(200,400);await page.waitForSelector('.hud-more',{state:'detached'});
+    await page.locator('.hud-pill').click();await page.waitForSelector('.hud-more');
+    await page.waitForSelector('.hud-more',{state:'detached',timeout:8000});
+  });
+  await check('walking_to_overview_clears_capsule_fade_and_keeps_details_usable',async()=>{
+    await page.keyboard.down('KeyW');
+    await page.waitForFunction(()=>document.body.classList.contains('fp-moving'));
+    try{await page.locator('[data-view="overview"]').click();}
+    finally{await page.keyboard.up('KeyW');}
+    await page.waitForFunction(()=>!document.body.classList.contains('fp-moving'),null,{timeout:1500});
+    await page.waitForFunction(()=>getComputedStyle(document.querySelector('.hud')).opacity==='1',null,{timeout:1500});
+    await page.locator('.hud-pill').click();await page.waitForSelector('.hud-more');
+    await page.locator('.dock [data-go="todo"]').click();await page.waitForSelector('.scrim');
+    assert.equal(await page.locator('.hud-more').count(),0);await page.locator('.scrim .x').click();
+    await page.locator('[data-view="fp"]').click();
+  });
   const pose=await page.evaluate(()=>App.firstPerson.getSnapshot().position);
   const cases=[
     {name:'portrait',w:393,h:852,t:48,r:0,b:24,l:0},
@@ -78,13 +101,29 @@ async function run(){
     const snapshot=await page.evaluate(()=>App.firstPerson.getSnapshot());
     assert.equal(snapshot.self,1);assert.equal(snapshot.view,'fp');assert.deepEqual(snapshot.position,pose);
   });
+  await check('room_light_moves_to_settings_and_survives_reload_locally',async()=>{
+    await page.evaluate(()=>App.act('settings'));await page.locator('.set-row [data-t="night"]').click();
+    assert.equal(await page.evaluate(()=>App.state.timeMode),'night');assert.equal(await page.evaluate(()=>localStorage.getItem('room-time-mode')),'night');
+    await page.reload();await page.waitForFunction(()=>window.App&&App.firstPerson&&!App.firstPerson.getSnapshot().blocked,null,{timeout:45000});
+    assert.equal(await page.evaluate(()=>App.state.timeMode),'night');
+    await page.evaluate(()=>App.act('settings'));assert.equal(await page.locator('.set-row [data-t="night"]').getAttribute('aria-pressed'),'true');
+    await page.locator('.set-row [data-t="auto"]').click();await page.locator('.scrim .x').click();
+  });
+  await page.setViewportSize({width:320,height:800});
+  await page.evaluate(()=>{
+    for(const edge of ['top','right','bottom','left'])document.documentElement.style.setProperty('--android-safe-'+edge,'0px');
+    document.querySelector('.hud .dnum b').textContent='892';
+  });await pause(200);
+  const [pill]=await bounds('.hud-pill'),[toolbar]=await bounds('.fp-top');
+  observations.push({scenario:'320px with 892-day label (display-only probe)',headerOverlapPx:Math.max(0,pill.right-toolbar.x),status:pill.right>toolbar.x?'UI owner follow-up':'fits'});
+  await page.screenshot({path:path.join(output,'browser-hud-320.png')});
   await check('no_runtime_errors',async()=>assert.deepEqual(errors,[]));
 }
 (async()=>{
   let failure=null;try{await run();}catch(e){failure=redact(e.message);}
   if(page)try{await page.evaluate(()=>Sync.setPresence(false));}catch(_){}
   if(browser)await browser.close();
-  const result={passed:!failure,baseline,checks,failure,environment:'Real Chrome/WebGL + isolated PocketBase, Wanru account; injected numeric safe-area values model the Android host, not a physical phone'};
+  const result={passed:!failure,baseline,checks,observations,failure,environment:'Real Chrome/WebGL + isolated PocketBase, Wanru account; injected numeric safe-area values model the Android host, not a physical phone'};
   fs.writeFileSync(path.join(output,baseline?'browser-viewport-before.json':'browser-viewport.json'),JSON.stringify(result,null,2)+'\n');
   console.log(JSON.stringify(result,null,2));process.exitCode=failure?1:0;
 })();

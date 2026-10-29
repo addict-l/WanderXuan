@@ -1,0 +1,13 @@
+{
+  "passed": false,
+  "baseline": false,
+  "checks": [
+    {
+      "check": "hud_capsule_and_detail_use_upstream_design",
+      "passed": false
+    }
+  ],
+  "observations": [],
+  "failure": "page.waitForSelector: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.scrim') to be visible\u001b[22m\n",
+  "environment": "Real Chrome/WebGL + isolated PocketBase, Wanru account; injected numeric safe-area values model the Android host, not a physical phone"
+}

@@ -97,6 +97,8 @@ cd android
 
 1.1.2 恢复原沙发玩偶，与新小人共存；离线小人展示座位位于沙发前缘中间。点击来源经 controller 的 `activate(owner)` 同步传递给本地 `onPoke`，确保玩偶气泡锚定原玩偶，远端仍使用原事件协议。结果见 [validation/mascot-restore/README.md](validation/mascot-restore/README.md)。
 
+胶囊 HUD 已合入 UI 提交 `4619e32`，两权威函数 `renderHud` / `openSettings` 采用该提交原文；兼容修正仅涉及 HUD 点击时序和清理输入后的 `getMove()` 状态刷新。说明及窄屏观察见 [validation/hud-merge/README.md](validation/hud-merge/README.md)。
+
 ## 交给 Claude 的 UI 问题
 
 模拟器发现现有新手引导的“走路”和“互动”说明重叠到左上角。原因是 `fp-ui.css:3` 的 `--gap`、`--gapr`、`--bot` 只定义在 `.fp`，而 `fp-ui.js` 把 `.fp-tut` 添加为 `body` 下的同级节点；`fp-ui.css:98–103` 使用这些变量时没有继承值。

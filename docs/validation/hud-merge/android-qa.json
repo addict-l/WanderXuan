@@ -1,0 +1,145 @@
+{
+  "recordedAt": "2026-10-29T05:18:31.361384+00:00",
+  "purpose": "ui/characters4619e32 HUD merge validation only; same1.1.2/code5, not a new production release",
+  "device": "existing emulator-5554 / Android16 API36",
+  "package": "cn.coupleroom.app.preview",
+  "apk": "android/artifacts/hud-merge/CoupleRoom-HUD-preview.apk",
+  "apkSha256": "f16a439dc7168c3dade29c5c0dd94fdbd6484485e1de805de77697c23abf0ef4",
+  "summary": {
+    "checksPassed": 8,
+    "checksTotal": 8,
+    "sourceModifiedByQA": false,
+    "physicalPhoneTested": false,
+    "previewStopped": true,
+    "finalTimeMode": "auto",
+    "originalRotationSettingsRestored": true
+  },
+  "checks": [
+    {
+      "id": "capsule-expand-collapse",
+      "status": "passed",
+      "screenshots": [
+        "01-capsule-portrait.png",
+        "02-capsule-expanded.png",
+        "04-capsule-collapsed.png"
+      ],
+      "observed": "New two-avatar/heart/day capsule visible. Real taps expand existing names/day/upcoming/presence card and tap again folds it."
+    },
+    {
+      "id": "details-opens-calendar",
+      "status": "passed",
+      "screenshot": "03-calendar-from-capsule.png",
+      "observed": "Real tap on card 打开挂历 opens original calendar and folds detail card. No calendar data edited."
+    },
+    {
+      "id": "settings-room-light",
+      "status": "passed",
+      "screenshots": [
+        "05-settings-light-auto.png",
+        "06-settings-light-night.png"
+      ],
+      "observed": "Settings includes 房间光线 with four choices. Real 夜晚 tap selects night and room switches to night lighting."
+    },
+    {
+      "id": "night-persists-restart",
+      "status": "passed",
+      "screenshots": [
+        "08-restart-keeps-night.png",
+        "09-settings-night-after-restart.png"
+      ],
+      "observed": "Force-stopped and restarted preview preserving storage; room remains night. Reopening settings still highlights 夜晚."
+    },
+    {
+      "id": "restore-light-auto",
+      "status": "passed",
+      "screenshots": [
+        "10-settings-restored-auto.png",
+        "11-room-restored-auto.png"
+      ],
+      "observed": "Real tap 跟着真实时间 selected auto. Settings highlight and daylight room screenshot confirm final auto state."
+    },
+    {
+      "id": "move-then-overview-capsule-opacity",
+      "status": "passed",
+      "screenshot": "14-overview-capsule-after-walk.png",
+      "observed": "Used actual touchscreen joystick to walk, released pointer, then actual primary-finger tap 俯瞰 and capsule. Overview capsule/details remain clearly visible with no residual walking opacity.",
+      "methodLimit": "Secondary-finger view tap while joystick pointer stayed down did not activate native WebView click in this attempt; that attempt is not counted as a successful mode switch. Passing evidence uses sequential released-joystick then primary tap.",
+      "motionEvidence": "13-fp-after-joystick-secondary-tap.png"
+    },
+    {
+      "id": "landscape-90-header-canvas",
+      "status": "passed",
+      "screenshot": "14-overview-capsule-after-walk.png",
+      "nativeWebViewFramePx": [
+        0,
+        0,
+        2424,
+        1080
+      ],
+      "statusBarsVisible": false,
+      "navigationBarsVisible": false,
+      "observed": "Capsule and details readable inside left cutout-safe area; artwork fills native window."
+    },
+    {
+      "id": "landscape-270-header-canvas",
+      "status": "passed",
+      "screenshot": "15-hud-landscape-270.png",
+      "nativeWebViewFramePx": [
+        0,
+        0,
+        2424,
+        1080
+      ],
+      "statusBarsVisible": false,
+      "navigationBarsVisible": false,
+      "observed": "Header and canvas stay full screen after reverse rotation; right controls avoid right cutout."
+    }
+  ],
+  "priorityEvidence": [
+    "02-capsule-expanded.png",
+    "10-settings-restored-auto.png",
+    "14-overview-capsule-after-walk.png",
+    "15-hud-landscape-270.png"
+  ],
+  "preservation": {
+    "productionApp": "Existing production app was not launched, updated, removed or cleared. Metadata unchanged.",
+    "productionMetadataBefore": {
+      "versionCode": "2 minSdk=26 targetSdk=36",
+      "versionName": "1.0.1",
+      "firstInstallTime": "2026-10-29 01:38:27",
+      "lastUpdateTime": "2026-10-29 02:07:56"
+    },
+    "productionMetadataAfter": {
+      "versionCode": "2 minSdk=26 targetSdk=36",
+      "versionName": "1.0.1",
+      "firstInstallTime": "2026-10-29 01:38:27",
+      "lastUpdateTime": "2026-10-29 02:07:56"
+    },
+    "previewMetadataAfter": {
+      "versionCode": "5 minSdk=26 targetSdk=36",
+      "versionName": "1.1.2",
+      "firstInstallTime": "2026-10-29 03:04:57",
+      "lastUpdateTime": "2026-10-29 13:09:24"
+    },
+    "rotationBefore": {
+      "mode": "free",
+      "accelerometer_rotation": "1",
+      "user_rotation": "0"
+    },
+    "rotationAfter": {
+      "mode": "free",
+      "accelerometer_rotation": "1",
+      "user_rotation": "0"
+    },
+    "rotationNote": "Original mode is free with stored user_rotation0. After free restore, existing sensor rotates display to landscape90; final16-rotation-restored frame is landscape and is not reported as a portrait verdict.",
+    "keyboard": "No keyboard/IME/hardware-keyboard/language/capture settings changed; fixed rules read before actions.",
+    "sourceEditsByQA": []
+  },
+  "cleanup": "Selected auto light, Home, force-stop preview, confirmed pid absent; original free/1/0 rotation settings restored.",
+  "limits": [
+    "Android emulator only, no physical phone or haptic/performance claim",
+    "Narrow320px/892-day known UI-branch header overlap is parent browser finding, not tested by changing device density or display",
+    "Broader app interactions retained parent14-item browser regression; this native run did not repeat sofa/poke flows",
+    "Movement-to-overview passed via sequential touch; simultaneous secondary-touch view activation not claimed"
+  ]
+}

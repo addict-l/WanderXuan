@@ -149,16 +149,18 @@ function mount(opts) {
   const mo = new MutationObserver(checkBlocked); mo.observe(document.body, { childList: true }); checkBlocked();
 
   /* ---------- public ---------- */
-  let pokeT = null;
+  let pokeT = null, moving = false;
+  const setMoving = v => { if (v !== moving) { moving = v; document.body.classList.toggle('fp-moving', v); } };
   const api = {
     el,
     on(ev, fn) { (handlers[ev] || (handlers[ev] = [])).push(fn); return () => { handlers[ev] = (handlers[ev] || []).filter(f => f !== fn); }; },
     /* x: right +, y: forward +, both -1..1 (joystick and WASD combined) */
     getMove() {
-      if (view !== 'fp' || blocked) return { x: 0, y: 0, active: false };
+      if (view !== 'fp' || blocked) { setMoving(false); return { x: 0, y: 0, active: false }; }
       let x = sv.x, y = sv.y;
       if (keys.size) { x += (keys.has('r') ? 1 : 0) - (keys.has('l') ? 1 : 0); y += (keys.has('u') ? 1 : 0) - (keys.has('d') ? 1 : 0); }
       const m = Math.hypot(x, y); if (m > 1) { x /= m; y /= m; }
+      setMoving(m > 0);
       return { x, y, active: m > 0 };
     },
     getView() { return view; },
@@ -208,7 +210,7 @@ function mount(opts) {
     /* first-time guide; shows once unless force */
     showTutorial(force) { let seen = false; try { seen = !!localStorage.getItem(TUT_KEY); } catch (e) {} if (force || !seen) tut.classList.add('on'); return api; },
     setMenuOpen(o) { el.classList.toggle('menu-open', !!o); document.body.classList.toggle('fp-menu-open', !!o); menu.setAttribute('aria-expanded', String(!!o)); emit('menu', !!o); return api; },
-    destroy() { mo.disconnect(); window.removeEventListener('keydown', onKey); window.removeEventListener('keyup', onKey); el.remove(); enter.remove(); tut.remove(); document.body.classList.remove('fp-mode', 'fp-menu-open'); }
+    destroy() { mo.disconnect(); window.removeEventListener('keydown', onKey); window.removeEventListener('keyup', onKey); el.remove(); enter.remove(); tut.remove(); document.body.classList.remove('fp-mode', 'fp-menu-open', 'fp-moving'); }
   };
   paint();
   return api;
