@@ -70,7 +70,7 @@ App 事件：本地 `emote` / `poke`，远端 `remote-emote` / `remote-poke`。p
 
 - 旧行缺少新字段时安全默认，旧面板、照片文件令牌及业务集合不变。
 - 完整位置与动作同步需要两端都更新。旧 1.0.0 客户端会整行覆盖 person JSON，无法替旧客户端补上本人行所有权协议。
-- 正式 APK 为 `cn.coupleroom.app`，1.1.2/code 5，沿用原签名。
+- 正式 APK 为 `cn.coupleroom.app`，1.1.3/code 6，沿用原签名。
 - `-ProomTestServer=<httpsURL>` 生成独立 `cn.coupleroom.app.preview`，只改构建生成的配置，不改 `web/config.js`；验收不使用生产房间。
 - `characters-preview.html`、`fp-ui-preview.html` 保留在网页源码，两个 APK 均排除这两页。提交前恢复生产 assets。
 - 增加普通 `VIBRATE` 权限供现成通知调用使用；物理触感仍需真机确认。
